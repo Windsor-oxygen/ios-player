@@ -2,6 +2,8 @@ import SwiftUI
 
 struct SongsView: View {
     @Environment(LibraryStore.self) private var library
+    @Environment(PlaybackEngine.self) private var engine
+    @Environment(AppPresenter.self) private var presenter
     @AppStorage("songs.sort") private var sort: SongSort = .title
     @State private var query = ""
     @State private var visible: [Track] = []
@@ -18,8 +20,18 @@ struct SongsView: View {
             content
                 .navigationTitle("Песни")
                 .toolbar {
-                    ToolbarItem(placement: .topBarLeading) { sortMenu }
-                    ToolbarItem(placement: .topBarTrailing) { AddMusicMenu() }
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            presenter.showsSettings = true
+                        } label: {
+                            Image(systemName: "gearshape")
+                                .accessibilityLabel("Настройки")
+                        }
+                    }
+                    ToolbarItemGroup(placement: .topBarTrailing) {
+                        sortMenu
+                        AddMusicMenu()
+                    }
                 }
                 .searchable(text: $query, prompt: "Название, исполнитель, альбом")
                 .refreshable { await library.refresh() }
@@ -44,9 +56,13 @@ struct SongsView: View {
             ContentUnavailableView.search(text: query)
         } else {
             List {
-                ForEach(visible) { track in
-                    TrackRow(track: track)
-                        .trackActions(track, pendingDeletion: $pendingDeletion, playlistTarget: $playlistTarget)
+                ForEach(Array(visible.enumerated()), id: \.element.id) { item in
+                    Button {
+                        engine.play(visible.map(\.id), startAt: item.offset)
+                    } label: {
+                        TrackRow(track: item.element)
+                    }
+                    .trackActions(item.element, pendingDeletion: $pendingDeletion, playlistTarget: $playlistTarget)
                 }
             }
             .listStyle(.plain)

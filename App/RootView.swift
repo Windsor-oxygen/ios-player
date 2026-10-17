@@ -2,16 +2,24 @@ import SwiftUI
 
 struct RootView: View {
     @Environment(LibraryStore.self) private var library
-    @Environment(ImportPresenter.self) private var presenter
+    @Environment(PlaybackEngine.self) private var engine
+    @Environment(AppPresenter.self) private var presenter
 
     var body: some View {
         @Bindable var presenter = presenter
 
         TabView {
-            Tab("Песни", systemImage: "music.note") { SongsView() }
-            Tab("Альбомы", systemImage: "square.stack") { AlbumsView() }
-            Tab("Исполнители", systemImage: "music.mic") { ArtistsView() }
-            Tab("Плейлисты", systemImage: "music.note.list") { PlaylistsView() }
+            Tab("Песни", systemImage: "music.note") { SongsView().miniPlayerInset() }
+            Tab("Альбомы", systemImage: "square.stack") { AlbumsView().miniPlayerInset() }
+            Tab("Исполнители", systemImage: "music.mic") { ArtistsView().miniPlayerInset() }
+            Tab("Плейлисты", systemImage: "music.note.list") { PlaylistsView().miniPlayerInset() }
+        }
+        .overlay(alignment: .top) { messageBanner }
+        .fullScreenCover(isPresented: $presenter.showsNowPlaying) {
+            NowPlayingView()
+        }
+        .sheet(isPresented: $presenter.showsSettings) {
+            SettingsView()
         }
         .fileImporter(
             isPresented: $presenter.showsFilePicker,
@@ -51,6 +59,23 @@ struct RootView: View {
             Button("OK", role: .cancel) {}
         } message: { notice in
             Text(notice)
+        }
+    }
+
+    /// Короткие сообщения движка («Сыграет следующей», ошибки воспроизведения).
+    @ViewBuilder
+    private var messageBanner: some View {
+        if let message = engine.message {
+            Text(message)
+                .font(.subheadline.weight(.semibold))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(.regularMaterial, in: Capsule())
+                .padding(.top, 8)
+                .padding(.horizontal, 16)
+                .transition(.move(edge: .top).combined(with: .opacity))
+                .accessibilityAddTraits(.updatesFrequently)
         }
     }
 }

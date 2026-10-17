@@ -86,7 +86,8 @@ jobs:
             --retain-codable-properties \
             --skip-build \
             --index-store-path "$DERIVED_DATA/Index.noindex/DataStore" \
-            --strict
+            --strict \
+            --disable-update-check
 
       - name: Release build (unsigned)
         run: |

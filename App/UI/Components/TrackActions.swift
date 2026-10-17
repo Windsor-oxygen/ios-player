@@ -9,33 +9,68 @@ struct TrackSelection: Identifiable {
 extension View {
     /// Контекстное меню и свайп «Удалить» для строки трека.
     func trackActions(_ track: Track, pendingDeletion: Binding<Track?>, playlistTarget: Binding<TrackSelection?>) -> some View {
-        contextMenu {
-            Button {
-                playlistTarget.wrappedValue = TrackSelection(trackIDs: [track.id])
-            } label: {
-                Label("Добавить в плейлист…", systemImage: "text.badge.plus")
-            }
-            Divider()
-            Button(role: .destructive) {
-                pendingDeletion.wrappedValue = track
-            } label: {
-                Label("Удалить с iPhone", systemImage: "trash")
-            }
-        }
-        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            // Без role: .destructive — иначе строка исчезает до подтверждения.
-            Button {
-                pendingDeletion.wrappedValue = track
-            } label: {
-                Label("Удалить", systemImage: "trash")
-            }
-            .tint(.red)
-        }
+        modifier(TrackRowActions(track: track, pendingDeletion: pendingDeletion, playlistTarget: playlistTarget))
     }
 
     /// Подтверждение удаления и выбор плейлиста — вешается на список один раз.
     func trackActionsHost(pendingDeletion: Binding<Track?>, playlistTarget: Binding<TrackSelection?>) -> some View {
         modifier(TrackActionsHost(pendingDeletion: pendingDeletion, playlistTarget: playlistTarget))
+    }
+}
+
+private struct TrackRowActions: ViewModifier {
+    let track: Track
+    @Binding var pendingDeletion: Track?
+    @Binding var playlistTarget: TrackSelection?
+    @Environment(PlaybackEngine.self) private var engine
+
+    func body(content: Content) -> some View {
+        content
+            .contextMenu {
+                if track.isAvailable {
+                    Button {
+                        engine.playNext([track.id])
+                    } label: {
+                        Label("Играть следующим", systemImage: "text.line.first.and.arrowtriangle.forward")
+                    }
+                    Button {
+                        engine.addToQueue([track.id])
+                    } label: {
+                        Label("В конец очереди", systemImage: "text.append")
+                    }
+                    Divider()
+                }
+                Button {
+                    playlistTarget = TrackSelection(trackIDs: [track.id])
+                } label: {
+                    Label("Добавить в плейлист…", systemImage: "text.badge.plus")
+                }
+                Divider()
+                Button(role: .destructive) {
+                    pendingDeletion = track
+                } label: {
+                    Label("Удалить с iPhone", systemImage: "trash")
+                }
+            }
+            .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                if track.isAvailable {
+                    Button {
+                        engine.playNext([track.id])
+                    } label: {
+                        Label("Следующим", systemImage: "text.line.first.and.arrowtriangle.forward")
+                    }
+                    .tint(.accentColor)
+                }
+            }
+            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                // Без role: .destructive — иначе строка исчезает до подтверждения.
+                Button {
+                    pendingDeletion = track
+                } label: {
+                    Label("Удалить", systemImage: "trash")
+                }
+                .tint(.red)
+            }
     }
 }
 

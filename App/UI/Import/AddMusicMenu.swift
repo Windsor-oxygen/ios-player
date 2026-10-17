@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Кнопка «+» в панели навигации.
 struct AddMusicMenu: View {
-    @Environment(ImportPresenter.self) private var presenter
+    @Environment(AppPresenter.self) private var presenter
 
     var body: some View {
         Menu {

@@ -60,6 +60,7 @@ struct ArtistDetailView: View {
     let artistID: String
 
     @Environment(LibraryStore.self) private var library
+    @Environment(PlaybackEngine.self) private var engine
     @State private var pendingDeletion: Track?
     @State private var playlistTarget: TrackSelection?
 
@@ -86,9 +87,15 @@ struct ArtistDetailView: View {
                     }
                 }
                 Section("Песни") {
-                    ForEach(library.tracks(ids: artist.trackIDs)) { track in
-                        TrackRow(track: track)
-                            .trackActions(track, pendingDeletion: $pendingDeletion, playlistTarget: $playlistTarget)
+                    PlayShuffleButtons(trackIDs: artist.trackIDs)
+                        .listRowSeparator(.hidden)
+                    ForEach(Array(library.tracks(ids: artist.trackIDs).enumerated()), id: \.element.id) { item in
+                        Button {
+                            engine.play(artist.trackIDs, startAt: item.offset)
+                        } label: {
+                            TrackRow(track: item.element)
+                        }
+                        .trackActions(item.element, pendingDeletion: $pendingDeletion, playlistTarget: $playlistTarget)
                     }
                 }
             }

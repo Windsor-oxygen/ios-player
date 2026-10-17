@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Пустая библиотека: как добавить музыку.
 struct EmptyLibraryView: View {
-    @Environment(ImportPresenter.self) private var presenter
+    @Environment(AppPresenter.self) private var presenter
 
     var body: some View {
         ScrollView {

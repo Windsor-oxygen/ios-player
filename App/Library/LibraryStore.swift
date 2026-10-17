@@ -20,6 +20,9 @@ final class LibraryStore {
     /// Разовое сообщение (например, о восстановлении повреждённого индекса).
     var notice: String?
 
+    /// Вызывается после каждого изменения треков; `removed` — исчезнувшие из библиотеки ID.
+    @ObservationIgnored var onTracksChanged: ((_ removed: Set<UUID>) -> Void)?
+
     @ObservationIgnored private let locations: StorageLocations
     @ObservationIgnored private let persistence: LibraryPersistence
     @ObservationIgnored private let importer: FileImporter
@@ -51,6 +54,19 @@ final class LibraryStore {
 
     func tracks(ids: [UUID]) -> [Track] {
         ids.compactMap { tracksByID[$0] }
+    }
+
+    func fileURL(for track: Track) -> URL {
+        locations.fileURL(forRelativePath: track.relativePath)
+    }
+
+    /// AVPlayer не смог воспроизвести файл — помечаем, чтобы пропускать его в очереди.
+    func markUnplayable(_ id: UUID) {
+        guard let index = tracks.firstIndex(where: { $0.id == id }), !tracks[index].isUnplayable else { return }
+        var updated = tracks
+        updated[index].isUnplayable = true
+        setTracks(updated)
+        scheduleSave()
     }
 
     // MARK: - Loading & refresh
@@ -322,6 +338,7 @@ final class LibraryStore {
     // MARK: - Derived state
 
     private func setTracks(_ newTracks: [Track]) {
+        let removed = Set(tracksByID.keys).subtracting(newTracks.map(\.id))
         tracks = newTracks
         tracksByID = Dictionary(newTracks.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         let visible = newTracks.filter { !$0.isMissing }
@@ -330,5 +347,6 @@ final class LibraryStore {
         albumsByID = Dictionary(albums.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         artistsByID = Dictionary(artists.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         revision &+= 1
+        onTracksChanged?(removed)
     }
 }

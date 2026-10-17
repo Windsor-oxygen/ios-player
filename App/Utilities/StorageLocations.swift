@@ -20,6 +20,7 @@ struct StorageLocations: Sendable {
     /// Сюда iOS кладёт файлы из «Открыть в…», если не может открыть их на месте.
     var inbox: URL { documents.appending(path: "Inbox", directoryHint: .isDirectory) }
     var libraryIndex: URL { applicationSupport.appending(path: "Library.json") }
+    var playbackState: URL { applicationSupport.appending(path: "Playback.json") }
     var artwork: URL { caches.appending(path: "Artwork", directoryHint: .isDirectory) }
     var downloads: URL { caches.appending(path: "Downloads", directoryHint: .isDirectory) }
 

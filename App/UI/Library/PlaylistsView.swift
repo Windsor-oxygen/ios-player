@@ -118,6 +118,7 @@ struct PlaylistDetailView: View {
     let playlistID: UUID
 
     @Environment(LibraryStore.self) private var library
+    @Environment(PlaybackEngine.self) private var engine
     @State private var isPicking = false
     @State private var isRenaming = false
     @State private var nameDraft = ""
@@ -125,9 +126,19 @@ struct PlaylistDetailView: View {
     var body: some View {
         if let playlist = library.playlist(id: playlistID) {
             List {
+                if !playlist.trackIDs.isEmpty {
+                    PlayShuffleButtons(trackIDs: playlist.trackIDs)
+                        .listRowSeparator(.hidden)
+                        .moveDisabled(true)
+                        .deleteDisabled(true)
+                }
                 ForEach(Array(playlist.trackIDs.enumerated()), id: \.offset) { item in
                     if let track = library.tracksByID[item.element] {
-                        TrackRow(track: track)
+                        Button {
+                            engine.play(playlist.trackIDs, startAt: item.offset)
+                        } label: {
+                            TrackRow(track: track)
+                        }
                     } else {
                         Text("Песня удалена")
                             .foregroundStyle(.secondary)

@@ -20,6 +20,7 @@ struct TrackRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(track.title)
                     .font(.body)
+                    .foregroundStyle(.primary)
                     .lineLimit(1)
                 Text(subtitle)
                     .font(.subheadline)

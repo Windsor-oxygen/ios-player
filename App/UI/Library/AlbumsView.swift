@@ -72,6 +72,7 @@ struct AlbumDetailView: View {
     let albumID: String
 
     @Environment(LibraryStore.self) private var library
+    @Environment(PlaybackEngine.self) private var engine
     @State private var pendingDeletion: Track?
     @State private var playlistTarget: TrackSelection?
 
@@ -86,9 +87,15 @@ struct AlbumDetailView: View {
                         .listRowSeparator(.hidden)
                 }
                 Section {
-                    ForEach(tracks) { track in
-                        TrackRow(track: track, showsTrackNumber: true)
-                            .trackActions(track, pendingDeletion: $pendingDeletion, playlistTarget: $playlistTarget)
+                    PlayShuffleButtons(trackIDs: album.trackIDs)
+                        .listRowSeparator(.hidden)
+                    ForEach(Array(tracks.enumerated()), id: \.element.id) { item in
+                        Button {
+                            engine.play(album.trackIDs, startAt: item.offset)
+                        } label: {
+                            TrackRow(track: item.element, showsTrackNumber: true)
+                        }
+                        .trackActions(item.element, pendingDeletion: $pendingDeletion, playlistTarget: $playlistTarget)
                     }
                 }
             }

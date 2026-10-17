@@ -8,10 +8,13 @@ struct PlayerApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
+                .environment(container.settings)
                 .environment(container.library)
+                .environment(container.playback)
                 .environment(container.downloads)
-                .environment(container.importPresenter)
-                .preferredColorScheme(.dark)
+                .environment(container.presenter)
+                .preferredColorScheme(container.settings.appearance.colorScheme)
+                .task { await container.playback.restore() }
                 .task { await container.library.refresh() }
                 // «Поделиться / Открыть в» из других приложений.
                 .onOpenURL { url in
@@ -24,6 +27,7 @@ struct PlayerApp: App {
                 // Файлы могли добавить через приложение «Файлы», пока мы были в фоне.
                 Task { await container.library.refresh() }
             case .background:
+                container.playback.saveState()
                 Task { await container.library.saveNow() }
             default:
                 break
