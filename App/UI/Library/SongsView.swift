@@ -8,10 +8,9 @@ struct SongsView: View {
     @State private var pendingDeletion: Track?
     @State private var playlistTarget: TrackSelection?
 
-    private struct ListKey: Hashable {
-        let revision: Int
-        let sort: SongSort
-        let query: String
+    /// Список пересчитывается при изменении библиотеки, сортировки или запроса.
+    private var listKey: String {
+        "\(library.revision)|\(sort.rawValue)|\(query)"
     }
 
     var body: some View {
@@ -24,7 +23,7 @@ struct SongsView: View {
                 }
                 .searchable(text: $query, prompt: "Название, исполнитель, альбом")
                 .refreshable { await library.refresh() }
-                .task(id: ListKey(revision: library.revision, sort: sort, query: query)) {
+                .task(id: listKey) {
                     // Небольшая задержка при вводе — не пересчитываем на каждую букву.
                     if !query.isEmpty {
                         try? await Task.sleep(for: .milliseconds(200))
