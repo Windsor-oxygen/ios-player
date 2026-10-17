@@ -10,7 +10,6 @@ struct NowPlayingView: View {
 
     var body: some View {
         ZStack {
-            DynamicBackground(artworkKey: engine.currentTrack?.artworkKey)
             if let track = engine.currentTrack {
                 content(track)
             } else {
@@ -18,6 +17,8 @@ struct NowPlayingView: View {
                     .foregroundStyle(.white)
             }
         }
+        // Фон через .background, чтобы растянутая обложка не влияла на раскладку.
+        .background { DynamicBackground(artworkKey: engine.currentTrack?.artworkKey) }
         .overlay(alignment: .top) { MessageBanner(message: engine.message) }
         .offset(y: dragOffset)
         .environment(\.colorScheme, .dark)
@@ -26,11 +27,11 @@ struct NowPlayingView: View {
     }
 
     private func content(_ track: Track) -> some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 16) {
             header
-            Spacer(minLength: 0)
+            // Обложка занимает всё оставшееся место и остаётся квадратной.
             artwork(track)
-            Spacer(minLength: 0)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             titles(track)
             ScrubberView()
             TransportControls()
@@ -71,7 +72,7 @@ struct NowPlayingView: View {
                     radius: engine.isPlaying ? 32 : 16, y: engine.isPlaying ? 18 : 8)
             .scaleEffect(engine.isPlaying ? 1 : 0.84)
             .animation(reduceMotion ? nil : .spring(response: 0.5, dampingFraction: 0.72), value: engine.isPlaying)
-            .padding(.horizontal, 8)
+            .padding(8)
             .id(track.id)
             .transition(.opacity)
             .animation(reduceMotion ? nil : .easeInOut(duration: 0.35), value: track.id)

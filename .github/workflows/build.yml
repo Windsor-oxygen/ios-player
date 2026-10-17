@@ -31,6 +31,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      # Каталог строк собирается скриптом из исходников и переводов —
+      # проверяем, что он актуален и у всех строк есть английский перевод.
+      - name: Check string catalog
+        run: |
+          python3 tools/build_strings.py
+          git diff --exit-code -- App/Resources/Localizable.xcstrings
+
       - name: Select Xcode
         id: xcode
         run: .github/scripts/select_xcode.sh

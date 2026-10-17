@@ -17,6 +17,8 @@ struct DynamicBackground: View {
                 Image(uiImage: backdrop)
                     .resizable()
                     .scaledToFill()
+                    .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+                    .clipped()
                     .opacity(0.55)
                     .transition(.opacity)
                     .id(artworkKey)
