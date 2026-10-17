@@ -62,6 +62,8 @@ jobs:
           xcrun simctl list devices available
           udid=$(python3 .github/scripts/select_simulator.py "$PROJECT" "$SCHEME")
           echo "udid=${udid}" >> "$GITHUB_OUTPUT"
+          # Загружаем симулятор заранее: пока идёт компиляция, он успеет стартовать.
+          xcrun simctl boot "$udid" || true
 
       - name: Unit tests
         run: |

@@ -4,19 +4,33 @@ struct RootView: View {
     @Environment(LibraryStore.self) private var library
     @Environment(PlaybackEngine.self) private var engine
     @Environment(AppPresenter.self) private var presenter
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Namespace private var playerNamespace
 
     var body: some View {
         @Bindable var presenter = presenter
 
         TabView {
-            Tab("Песни", systemImage: "music.note") { SongsView().miniPlayerInset() }
-            Tab("Альбомы", systemImage: "square.stack") { AlbumsView().miniPlayerInset() }
-            Tab("Исполнители", systemImage: "music.mic") { ArtistsView().miniPlayerInset() }
-            Tab("Плейлисты", systemImage: "music.note.list") { PlaylistsView().miniPlayerInset() }
+            Tab("Песни", systemImage: "music.note") { SongsView().miniPlayerInset(namespace: playerNamespace) }
+            Tab("Альбомы", systemImage: "square.stack") { AlbumsView().miniPlayerInset(namespace: playerNamespace) }
+            Tab("Исполнители", systemImage: "music.mic") { ArtistsView().miniPlayerInset(namespace: playerNamespace) }
+            Tab("Плейлисты", systemImage: "music.note.list") { PlaylistsView().miniPlayerInset(namespace: playerNamespace) }
         }
-        .overlay(alignment: .top) { messageBanner }
+        .animation(reduceMotion ? nil : .spring(response: 0.4, dampingFraction: 0.85), value: engine.currentTrack == nil)
+        .overlay(alignment: .top) {
+            if !presenter.showsNowPlaying { MessageBanner(message: engine.message) }
+        }
+        .sensoryFeedback(trigger: library.lastReport) { _, report in
+            guard let report else { return nil }
+            return report.failures.isEmpty ? .success : .warning
+        }
+        .onChange(of: engine.message) { _, message in
+            // VoiceOver зачитывает всплывающие сообщения.
+            if let message { AccessibilityNotification.Announcement(message).post() }
+        }
         .fullScreenCover(isPresented: $presenter.showsNowPlaying) {
             NowPlayingView()
+                .nowPlayingTransition(namespace: playerNamespace, reduceMotion: reduceMotion)
         }
         .sheet(isPresented: $presenter.showsSettings) {
             SettingsView()
@@ -59,23 +73,6 @@ struct RootView: View {
             Button("OK", role: .cancel) {}
         } message: { notice in
             Text(notice)
-        }
-    }
-
-    /// Короткие сообщения движка («Сыграет следующей», ошибки воспроизведения).
-    @ViewBuilder
-    private var messageBanner: some View {
-        if let message = engine.message {
-            Text(message)
-                .font(.subheadline.weight(.semibold))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(.regularMaterial, in: Capsule())
-                .padding(.top, 8)
-                .padding(.horizontal, 16)
-                .transition(.move(edge: .top).combined(with: .opacity))
-                .accessibilityAddTraits(.updatesFrequently)
         }
     }
 }

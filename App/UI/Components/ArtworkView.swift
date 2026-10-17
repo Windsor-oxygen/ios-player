@@ -5,6 +5,8 @@ struct ArtworkView: View {
     let key: String?
     var size: ArtworkStore.Size = .small
     var cornerRadius: CGFloat = 6
+    /// Отключить заглушку «♪» (например, пока грузится обложка поверх другого фона).
+    var showsPlaceholder = true
 
     @Environment(LibraryStore.self) private var library
     @State private var image: UIImage?
@@ -16,8 +18,10 @@ struct ArtworkView: View {
                     .resizable()
                     .scaledToFill()
                     .transition(.opacity)
-            } else {
+            } else if showsPlaceholder {
                 ArtworkPlaceholder()
+            } else {
+                Color.clear
             }
         }
         .aspectRatio(1, contentMode: .fit)

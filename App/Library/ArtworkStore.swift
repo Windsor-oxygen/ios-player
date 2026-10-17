@@ -1,3 +1,4 @@
+import CoreImage
 import CryptoKit
 import ImageIO
 import UIKit
@@ -28,10 +29,14 @@ final class ArtworkStore: @unchecked Sendable {
 
     private let directory: URL
     private let memory = NSCache<NSString, UIImage>()
+    private let palettes = NSCache<NSString, PaletteBox>()
+    /// CIContext потокобезопасен и дорог в создании — один на приложение.
+    private let ciContext = CIContext()
 
     init(directory: URL) {
         self.directory = directory
         memory.countLimit = 300
+        palettes.countLimit = 100
     }
 
     /// Создаёт уменьшенные копии и возвращает ключ. Синхронно, тяжёлое —
@@ -68,6 +73,39 @@ final class ArtworkStore: @unchecked Sendable {
         return prepared
     }
 
+    /// Размытая обложка для фона экрана воспроизведения. Размываем один раз
+    /// (Core Image, вне main thread), а не фильтром SwiftUI на каждом кадре.
+    func backdrop(key: String) async -> UIImage? {
+        let cacheKey = "\(key)-backdrop" as NSString
+        if let cached = memory.object(forKey: cacheKey) { return cached }
+        guard let source = UIImage(contentsOfFile: fileURL(key: key, size: .medium).path(percentEncoded: false)),
+              let cgImage = source.cgImage else { return nil }
+        let input = CIImage(cgImage: cgImage)
+        let blurred = input.clampedToExtent().applyingGaussianBlur(sigma: 24).cropped(to: input.extent)
+        guard let output = ciContext.createCGImage(blurred, from: input.extent) else { return nil }
+        let image = UIImage(cgImage: output)
+        memory.setObject(image, forKey: cacheKey)
+        return image
+    }
+
+    /// Доминантные цвета обложки для динамического фона (кэш в памяти и на диске).
+    func palette(key: String) async -> [RGBColor] {
+        let cacheKey = key as NSString
+        if let cached = palettes.object(forKey: cacheKey) { return cached.colors }
+        let file = directory.appending(path: "\(key)-palette.json")
+        if let data = try? Data(contentsOf: file),
+           let colors = try? JSONDecoder().decode([RGBColor].self, from: data) {
+            palettes.setObject(PaletteBox(colors), forKey: cacheKey)
+            return colors
+        }
+        let colors = PaletteExtractor.palette(fromImageAt: fileURL(key: key, size: .small))
+        if let data = try? JSONEncoder().encode(colors) {
+            try? data.write(to: file, options: [.atomic])
+        }
+        palettes.setObject(PaletteBox(colors), forKey: cacheKey)
+        return colors
+    }
+
     /// Удаляет обложки, на которые больше не ссылается ни один трек.
     func removeUnreferenced(keeping keys: Set<String>) {
         let fm = FileManager.default
@@ -80,6 +118,7 @@ final class ArtworkStore: @unchecked Sendable {
             }
         }
         memory.removeAllObjects()
+        palettes.removeAllObjects()
     }
 
     private func fileURL(key: String, size: Size) -> URL {
@@ -104,5 +143,14 @@ final class ArtworkStore: @unchecked Sendable {
         CGImageDestinationAddImage(destination, image, [kCGImageDestinationLossyCompressionQuality: 0.85] as CFDictionary)
         guard CGImageDestinationFinalize(destination) else { throw CocoaError(.fileWriteUnknown) }
         try (data as Data).write(to: url, options: [.atomic])
+    }
+}
+
+/// Обёртка для хранения палитры в NSCache (нужен class).
+private final class PaletteBox {
+    let colors: [RGBColor]
+
+    init(_ colors: [RGBColor]) {
+        self.colors = colors
     }
 }

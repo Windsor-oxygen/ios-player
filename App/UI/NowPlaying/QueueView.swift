@@ -77,6 +77,8 @@ struct QueueModeButtons: View {
             .accessibilityValue(repeatDescription)
         }
         .buttonStyle(.plain)
+        .sensoryFeedback(.selection, trigger: engine.queue.isShuffled)
+        .sensoryFeedback(.selection, trigger: engine.queue.repeatMode)
     }
 
     private var repeatDescription: String {
