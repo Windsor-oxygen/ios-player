@@ -1,4 +1,5 @@
 import CoreGraphics
+import Foundation
 import ImageIO
 
 /// Цвет в sRGB, компоненты 0…1.
