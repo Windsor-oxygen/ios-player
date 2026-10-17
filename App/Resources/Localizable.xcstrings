@@ -647,23 +647,6 @@
         }
       }
     },
-    "Добавление музыки…": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Adding music…"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Добавление музыки…"
-          }
-        }
-      }
-    },
     "Добавлено в очередь": {
       "extractionState": "manual",
       "localizations": {
@@ -1272,6 +1255,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "О приложении"
+          }
+        }
+      }
+    },
+    "Обновление библиотеки…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updating library…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновление библиотеки…"
           }
         }
       }

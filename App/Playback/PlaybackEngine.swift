@@ -94,15 +94,20 @@ final class PlaybackEngine {
 
     // MARK: - Commands
 
-    /// Начать воспроизведение списка с позиции `index`.
-    func play(_ trackIDs: [UUID], startAt index: Int = 0, shuffled: Bool = false) {
-        guard !trackIDs.isEmpty else { return }
-        if !shuffled, trackIDs.indices.contains(index),
+    /// Пользователь нажал на конкретную песню в списке.
+    /// Если её файла нет, не подменяем её молча соседней.
+    func playTapped(_ trackIDs: [UUID], at index: Int) {
+        if trackIDs.indices.contains(index),
            let tapped = library.tracksByID[trackIDs[index]], !tapped.isAvailable {
-            // Не подменяем выбранную песню соседней молча.
             show(String(localized: "Файл «\(tapped.title)» недоступен"))
             return
         }
+        play(trackIDs, startAt: index)
+    }
+
+    /// Начать воспроизведение списка с позиции `index` (недоступные песни пропускаются).
+    func play(_ trackIDs: [UUID], startAt index: Int = 0, shuffled: Bool = false) {
+        guard !trackIDs.isEmpty else { return }
         let start = shuffled ? Int.random(in: 0..<trackIDs.count) : index
         queue.replace(with: trackIDs, startAt: start, shuffled: shuffled)
         load(queue.current, autoplay: true)

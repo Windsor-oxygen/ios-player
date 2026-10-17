@@ -228,7 +228,8 @@ final class LibraryStore {
         }
     }
 
-    private func present(_ report: ImportReport) {
+    /// Показать итог импорта; если предыдущий ещё не показан — объединить.
+    func present(_ report: ImportReport) {
         if var existing = lastReport {
             existing.importedPaths += report.importedPaths
             existing.failures += report.failures

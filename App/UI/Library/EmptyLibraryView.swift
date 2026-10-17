@@ -54,7 +54,7 @@ struct EmptyLibraryView: View {
                 }
 
                 if library.isRefreshing {
-                    ProgressView("Добавление музыки…")
+                    ProgressView("Обновление библиотеки…")
                 }
 
                 Text("Поддерживаются MP3, M4A/AAC, ALAC, WAV, AIFF и FLAC.")

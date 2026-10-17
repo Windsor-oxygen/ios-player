@@ -91,7 +91,7 @@ struct AlbumDetailView: View {
                         .listRowSeparator(.hidden)
                     ForEach(Array(tracks.enumerated()), id: \.element.id) { item in
                         Button {
-                            engine.play(album.trackIDs, startAt: item.offset)
+                            engine.playTapped(album.trackIDs, at: item.offset)
                         } label: {
                             TrackRow(track: item.element, showsTrackNumber: true)
                         }

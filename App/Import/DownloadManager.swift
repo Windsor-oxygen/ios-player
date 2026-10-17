@@ -260,7 +260,7 @@ final class DownloadManager {
         case .success(let fileName):
             phase = .finished(fileName: fileName)
             if !isSheetVisible {
-                library.lastReport = ImportReport(importedPaths: [fileName])
+                library.present(ImportReport(importedPaths: [fileName]))
             }
         case .failure(let error):
             fail(.importFailed(error))

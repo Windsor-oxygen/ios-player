@@ -91,7 +91,7 @@ struct ArtistDetailView: View {
                         .listRowSeparator(.hidden)
                     ForEach(Array(library.tracks(ids: artist.trackIDs).enumerated()), id: \.element.id) { item in
                         Button {
-                            engine.play(artist.trackIDs, startAt: item.offset)
+                            engine.playTapped(artist.trackIDs, at: item.offset)
                         } label: {
                             TrackRow(track: item.element)
                         }

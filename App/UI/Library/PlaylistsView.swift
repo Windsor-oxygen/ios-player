@@ -135,7 +135,7 @@ struct PlaylistDetailView: View {
                 ForEach(Array(playlist.trackIDs.enumerated()), id: \.offset) { item in
                     if let track = library.tracksByID[item.element] {
                         Button {
-                            engine.play(playlist.trackIDs, startAt: item.offset)
+                            engine.playTapped(playlist.trackIDs, at: item.offset)
                         } label: {
                             TrackRow(track: track)
                         }

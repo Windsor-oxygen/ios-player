@@ -58,7 +58,7 @@ struct SongsView: View {
             List {
                 ForEach(Array(visible.enumerated()), id: \.element.id) { item in
                     Button {
-                        engine.play(visible.map(\.id), startAt: item.offset)
+                        engine.playTapped(visible.map(\.id), at: item.offset)
                     } label: {
                         TrackRow(track: item.element)
                     }
