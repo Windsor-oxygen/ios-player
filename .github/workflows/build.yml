@@ -1,0 +1,129 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  PROJECT: Player.xcodeproj
+  SCHEME: Player
+  APP_NAME: Player
+  DERIVED_DATA: ${{ github.workspace }}/DerivedData
+  HOMEBREW_NO_AUTO_UPDATE: "1"
+  HOMEBREW_NO_INSTALL_CLEANUP: "1"
+  HOMEBREW_NO_ANALYTICS: "1"
+
+jobs:
+  build:
+    name: Test, audit, build .ipa
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Select Xcode
+        id: xcode
+        run: .github/scripts/select_xcode.sh
+
+      # Исходники после checkout всегда «новые» по mtime, поэтому кэшировать
+      # Build/ бессмысленно — Swift всё равно пересоберёт. Выигрыш даёт кэш
+      # предсобранных модулей SDK (SwiftUI, UIKit, AVFoundation…).
+      - name: Cache module cache
+        uses: actions/cache@v5
+        with:
+          path: ${{ env.DERIVED_DATA }}/ModuleCache.noindex
+          key: modulecache-${{ runner.os }}-${{ steps.xcode.outputs.version }}-${{ hashFiles('project.yml') }}
+          restore-keys: |
+            modulecache-${{ runner.os }}-${{ steps.xcode.outputs.version }}-
+
+      - name: Install XcodeGen and Periphery
+        run: |
+          brew install xcodegen
+          brew install peripheryapp/periphery/periphery || brew install periphery
+          xcodegen --version
+          periphery version
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Pick simulator
+        id: sim
+        run: |
+          xcrun simctl list devices available
+          udid=$(python3 .github/scripts/select_simulator.py "$PROJECT" "$SCHEME")
+          echo "udid=${udid}" >> "$GITHUB_OUTPUT"
+
+      - name: Unit tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -configuration Debug \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -derivedDataPath "$DERIVED_DATA" \
+            -resultBundlePath TestResults.xcresult \
+            COMPILER_INDEX_STORE_ENABLE=YES \
+            CODE_SIGNING_ALLOWED=NO \
+            -quiet
+
+      - name: Dead code (Periphery)
+        run: |
+          periphery scan \
+            --project "$PROJECT" \
+            --schemes "$SCHEME" \
+            --retain-codable-properties \
+            --skip-build \
+            --index-store-path "$DERIVED_DATA/Index.noindex/DataStore" \
+            --strict
+
+      - name: Release build (unsigned)
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -derivedDataPath "$DERIVED_DATA" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            -quiet
+
+      - name: Package .ipa
+        run: |
+          app="$DERIVED_DATA/Build/Products/Release-iphoneos/$APP_NAME.app"
+          test -d "$app"
+          plutil -p "$app/Info.plist" | grep -E 'CFBundleDisplayName|CFBundleIdentifier|UIBackgroundModes|MinimumOSVersion' -A2 || true
+          rm -rf build && mkdir -p build/Payload
+          cp -R "$app" build/Payload/
+          (cd build && zip -qry "$APP_NAME.ipa" Payload)
+          ls -lh "build/$APP_NAME.ipa"
+
+      - name: Upload .ipa
+        uses: actions/upload-artifact@v6
+        with:
+          name: Player-ipa
+          path: build/${{ env.APP_NAME }}.ipa
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: TestResults
+          path: TestResults.xcresult
+          if-no-files-found: ignore
+          retention-days: 7
