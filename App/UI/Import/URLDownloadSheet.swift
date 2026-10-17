@@ -45,8 +45,14 @@ struct URLDownloadSheet: View {
                     Button("Закрыть") { dismiss() }
                 }
             }
-            .onAppear { focused = !downloads.phase.isBusy }
-            .onDisappear { downloads.reset() }
+            .onAppear {
+                downloads.isSheetVisible = true
+                focused = !downloads.phase.isBusy
+            }
+            .onDisappear {
+                downloads.isSheetVisible = false
+                downloads.reset()
+            }
         }
     }
 

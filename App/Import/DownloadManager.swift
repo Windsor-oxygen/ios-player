@@ -153,6 +153,8 @@ final class DownloadManager {
     }
 
     private(set) var phase: Phase = .idle
+    /// Открыт ли экран загрузки. Если нет — итог показываем общим алертом.
+    @ObservationIgnored var isSheetVisible = false
 
     @ObservationIgnored private let locations: StorageLocations
     @ObservationIgnored private weak var library: LibraryStore?
@@ -163,6 +165,9 @@ final class DownloadManager {
     init(locations: StorageLocations, library: LibraryStore) {
         self.locations = locations
         self.library = library
+        // Недоимпортированные файлы прошлого запуска (приложение могли закрыть посреди загрузки).
+        // Синхронно и до первой загрузки, чтобы не удалить уже новый файл.
+        try? FileManager.default.removeItem(at: locations.downloads)
     }
 
     func start(_ text: String) {
@@ -254,8 +259,11 @@ final class DownloadManager {
         switch result {
         case .success(let fileName):
             phase = .finished(fileName: fileName)
+            if !isSheetVisible {
+                library.lastReport = ImportReport(importedPaths: [fileName])
+            }
         case .failure(let error):
-            phase = .failed(DownloadError.importFailed(error).errorDescription ?? "")
+            fail(.importFailed(error))
         }
     }
 
@@ -263,7 +271,9 @@ final class DownloadManager {
         session?.invalidateAndCancel()
         session = nil
         currentID = nil
-        phase = .failed(error.errorDescription ?? "")
+        let message = error.errorDescription ?? ""
+        phase = .failed(message)
+        if !isSheetVisible { library?.notice = message }
     }
 
     private func finishSession() {

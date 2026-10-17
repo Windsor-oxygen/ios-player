@@ -11,7 +11,7 @@ struct AlbumsView: View {
             Group {
                 if library.isLoaded && library.albums.isEmpty {
                     EmptyLibraryView()
-                } else if filtered.isEmpty {
+                } else if filtered.isEmpty && !query.isEmpty {
                     ContentUnavailableView.search(text: query)
                 } else {
                     ScrollView {

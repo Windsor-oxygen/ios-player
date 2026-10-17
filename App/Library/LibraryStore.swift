@@ -205,6 +205,8 @@ final class LibraryStore {
     func importFiles(_ urls: [URL]) async {
         guard !urls.isEmpty else { return }
         await ensureLoaded()
+        // Индикатор на время копирования; refresh() снимет его по завершении.
+        isRefreshing = true
         let report = await importer.importFiles(urls)
         await refresh()
         present(report)

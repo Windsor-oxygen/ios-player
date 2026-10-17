@@ -35,7 +35,9 @@ final class ArtworkStore: @unchecked Sendable {
 
     init(directory: URL) {
         self.directory = directory
-        memory.countLimit = 300
+        // Лимит по объёму декодированных пикселей, а не по количеству: одна обложка
+        // 720 px — это ~2 МБ, 360 px — ~0,5 МБ.
+        memory.totalCostLimit = 48 * 1024 * 1024
         palettes.countLimit = 100
     }
 
@@ -69,7 +71,7 @@ final class ArtworkStore: @unchecked Sendable {
             return nil
         }
         let prepared = await loaded.byPreparingForDisplay() ?? loaded
-        memory.setObject(prepared, forKey: cacheKey)
+        memory.setObject(prepared, forKey: cacheKey, cost: Self.cost(of: prepared))
         return prepared
     }
 
@@ -84,7 +86,7 @@ final class ArtworkStore: @unchecked Sendable {
         let blurred = input.clampedToExtent().applyingGaussianBlur(sigma: 24).cropped(to: input.extent)
         guard let output = ciContext.createCGImage(blurred, from: input.extent) else { return nil }
         let image = UIImage(cgImage: output)
-        memory.setObject(image, forKey: cacheKey)
+        memory.setObject(image, forKey: cacheKey, cost: Self.cost(of: image))
         return image
     }
 
@@ -107,18 +109,28 @@ final class ArtworkStore: @unchecked Sendable {
     }
 
     /// Удаляет обложки, на которые больше не ссылается ни один трек.
+    /// Свежие файлы (моложе минуты) не трогаем: их мог только что создать
+    /// параллельный импорт, а ключ ещё не попал в библиотеку.
     func removeUnreferenced(keeping keys: Set<String>) {
         let fm = FileManager.default
-        guard let files = try? fm.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil) else { return }
+        guard let files = try? fm.contentsOfDirectory(
+            at: directory, includingPropertiesForKeys: [.contentModificationDateKey]
+        ) else { return }
+        let threshold = Date.now.addingTimeInterval(-60)
         for file in files {
             let name = file.deletingPathExtension().lastPathComponent
             let key = name.split(separator: "-").first.map(String.init) ?? name
-            if !keys.contains(key) {
+            let modified = (try? file.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
+            if !keys.contains(key), (modified ?? .distantPast) < threshold {
                 try? fm.removeItem(at: file)
             }
         }
         memory.removeAllObjects()
         palettes.removeAllObjects()
+    }
+
+    private static func cost(of image: UIImage) -> Int {
+        Int(image.size.width * image.scale * image.size.height * image.scale * 4)
     }
 
     private func fileURL(key: String, size: Size) -> URL {

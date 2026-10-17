@@ -97,6 +97,12 @@ final class PlaybackEngine {
     /// Начать воспроизведение списка с позиции `index`.
     func play(_ trackIDs: [UUID], startAt index: Int = 0, shuffled: Bool = false) {
         guard !trackIDs.isEmpty else { return }
+        if !shuffled, trackIDs.indices.contains(index),
+           let tapped = library.tracksByID[trackIDs[index]], !tapped.isAvailable {
+            // Не подменяем выбранную песню соседней молча.
+            show(String(localized: "Файл «\(tapped.title)» недоступен"))
+            return
+        }
         let start = shuffled ? Int.random(in: 0..<trackIDs.count) : index
         queue.replace(with: trackIDs, startAt: start, shuffled: shuffled)
         load(queue.current, autoplay: true)
@@ -109,7 +115,11 @@ final class PlaybackEngine {
             load(queue.current, autoplay: true)
             return currentTrack == nil ? .noSuchContent : .success
         }
-        session.activate()
+        guard session.activate() else {
+            // Например, идёт звонок: система не отдаёт звук — не делаем вид, что играем.
+            show(String(localized: "Сейчас нельзя включить звук. Попробуйте ещё раз."))
+            return .commandFailed
+        }
         resumeAfterInterruption = false
         player.play()
         isPlaying = true
@@ -594,8 +604,13 @@ final class PlaybackEngine {
 
     private func itemDidFail(_ id: ObjectIdentifier) {
         guard let entryID = itemEntries[id] else { return }
-        if let trackID = queue.entries.first(where: { $0.id == entryID })?.trackID {
-            library.markUnplayable(trackID)
+        if let trackID = queue.entries.first(where: { $0.id == entryID })?.trackID,
+           let track = library.tracksByID[trackID] {
+            // Удалённый файл пометит пересканирование; «битым» считаем только существующий.
+            let path = library.fileURL(for: track).path(percentEncoded: false)
+            if FileManager.default.fileExists(atPath: path) {
+                library.markUnplayable(trackID)
+            }
         }
         if id == preloadedItemID {
             if let item = player.items().first(where: { ObjectIdentifier($0) == id }) { player.remove(item) }

@@ -3,6 +3,7 @@ import SwiftUI
 /// Пустая библиотека: как добавить музыку.
 struct EmptyLibraryView: View {
     @Environment(AppPresenter.self) private var presenter
+    @Environment(LibraryStore.self) private var library
 
     var body: some View {
         ScrollView {
@@ -50,6 +51,10 @@ struct EmptyLibraryView: View {
                     }
                     .buttonStyle(.bordered)
                     .controlSize(.large)
+                }
+
+                if library.isRefreshing {
+                    ProgressView("Добавление музыки…")
                 }
 
                 Text("Поддерживаются MP3, M4A/AAC, ALAC, WAV, AIFF и FLAC.")

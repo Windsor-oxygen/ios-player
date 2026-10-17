@@ -158,7 +158,7 @@ struct FileImporter: Sendable {
             if move {
                 try fm.moveItem(at: source, to: destination)
             } else {
-                try fm.copyItem(at: source, to: destination)
+                try Self.coordinatedCopy(from: source, to: destination)
             }
         } catch let error as CocoaError where error.code == .fileWriteOutOfSpace {
             throw ImportError.insufficientSpace
@@ -168,6 +168,22 @@ struct FileImporter: Sendable {
             throw ImportError.copyFailed(error.localizedDescription)
         }
         return destination
+    }
+
+    /// Копирование через NSFileCoordinator: файлы iCloud Drive и других
+    /// провайдеров при этом докачиваются, а не копируются «заглушкой».
+    private static func coordinatedCopy(from source: URL, to destination: URL) throws {
+        var coordinationError: NSError?
+        var copyError: Error?
+        NSFileCoordinator().coordinate(readingItemAt: source, options: [.withoutChanges], error: &coordinationError) { readURL in
+            do {
+                try FileManager.default.copyItem(at: readURL, to: destination)
+            } catch {
+                copyError = error
+            }
+        }
+        if let coordinationError { throw coordinationError }
+        if let copyError { throw copyError }
     }
 
     private func relativePathOrThrow(_ url: URL) throws -> String {

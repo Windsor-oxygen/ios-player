@@ -9,7 +9,7 @@ struct ArtistsView: View {
             Group {
                 if library.isLoaded && library.artists.isEmpty {
                     EmptyLibraryView()
-                } else if filtered.isEmpty {
+                } else if filtered.isEmpty && !query.isEmpty {
                     ContentUnavailableView.search(text: query)
                 } else {
                     List(filtered) { artist in
