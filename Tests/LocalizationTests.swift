@@ -1,5 +1,4 @@
 import XCTest
-@testable import Player
 
 /// Проверяет, что String Catalog скомпилирован в сборку для обоих языков.
 final class LocalizationTests: XCTestCase {
