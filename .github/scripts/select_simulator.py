@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Печатает id доступного симулятора iPhone с самой новой iOS.
+"""Печатает id доступного симулятора iPhone с самой новой iOS, не новее SDK.
+
+Рантайм новее SDK выбранного Xcode запускается, но медленно и нестабильно,
+поэтому предпочитаем версию iOS ≤ версии SDK (`xcrun --show-sdk-version`).
 
 Сначала смотрит `xcodebuild -showdestinations` (только то, что реально
 поддерживает выбранный Xcode), затем — `xcrun simctl list devices available`.
@@ -51,6 +54,10 @@ def main() -> int:
     project, scheme = sys.argv[1], sys.argv[2]
     candidates = from_destinations(project, scheme) or from_simctl()
     candidates = [c for c in candidates if c[0] >= (18,)]
+    sdk = subprocess.run(["xcrun", "--sdk", "iphonesimulator", "--show-sdk-version"],
+                         capture_output=True, text=True, check=False).stdout.strip()
+    matching = [c for c in candidates if sdk and c[0] <= version_key(sdk)]
+    candidates = matching or candidates
     if not candidates:
         print("Не найден симулятор iPhone с iOS 18+", file=sys.stderr)
         return 1

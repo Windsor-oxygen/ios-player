@@ -70,7 +70,7 @@ jobs:
             -project "$PROJECT" \
             -scheme "$SCHEME" \
             -configuration Debug \
-            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -destination "platform=iOS Simulator,arch=arm64,id=${{ steps.sim.outputs.udid }}" \
             -derivedDataPath "$DERIVED_DATA" \
             -resultBundlePath TestResults.xcresult \
             COMPILER_INDEX_STORE_ENABLE=YES \
@@ -82,6 +82,7 @@ jobs:
           periphery scan \
             --project "$PROJECT" \
             --schemes "$SCHEME" \
+            --targets Player PlayerTests \
             --retain-codable-properties \
             --skip-build \
             --index-store-path "$DERIVED_DATA/Index.noindex/DataStore" \
