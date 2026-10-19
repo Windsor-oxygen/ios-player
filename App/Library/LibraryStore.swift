@@ -15,6 +15,9 @@ final class LibraryStore {
     private(set) var revision = 0
     private(set) var isLoaded = false
     private(set) var isRefreshing = false
+    /// Индекс не удалось прочитать или сохранить в копию: в этой сессии ничего
+    /// не записываем (ни библиотеку, ни состояние воспроизведения), чтобы не затереть данные.
+    @ObservationIgnored private(set) var isReadOnly = false
     /// Итог последнего импорта для алерта; UI обнуляет после показа.
     var lastReport: ImportReport?
     /// Разовое сообщение (например, о восстановлении повреждённого индекса).
@@ -88,12 +91,14 @@ final class LibraryStore {
         case .recovered(let index, let backupCreated):
             playlists = index.playlists
             setTracks(index.tracks)
+            isReadOnly = !backupCreated
             if backupCreated {
                 notice = String(localized: "Файл библиотеки был повреждён. Его копия сохранена, библиотека восстановлена, плейлистов спасено: \(index.playlists.count). Музыкальные файлы не пострадали.")
             } else {
                 notice = String(localized: "Файл библиотеки повреждён, а сделать его копию не удалось. Чтобы ничего не потерять, изменения в этот раз не сохраняются. Освободите место на iPhone и перезапустите приложение.")
             }
         case .unreadable:
+            isReadOnly = true
             notice = String(localized: "Не удалось прочитать файл библиотеки. Чтобы ничего не потерять, изменения в этот раз не сохраняются. Перезапустите приложение.")
         }
         isLoaded = true

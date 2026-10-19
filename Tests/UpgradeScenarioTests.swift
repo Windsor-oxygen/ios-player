@@ -81,6 +81,36 @@ final class UpgradeScenarioTests: XCTestCase {
         }
     }
 
+    func testUnreadableIndexBlocksAllWrites() async throws {
+        let locations = try TestSupport.makeLocations()
+        defer { TestSupport.cleanUp(locations) }
+        let original = try JSONDecoder().decode(LibraryIndex.self, from: Fixtures.data("Library-v1"))
+        try installV1Container(original, at: locations)
+        // Индекс есть, но не читается (папка вместо файла).
+        try FileManager.default.removeItem(at: locations.libraryIndex)
+        try FileManager.default.createDirectory(at: locations.libraryIndex, withIntermediateDirectories: true)
+        let playback = try Data(contentsOf: locations.playbackState)
+
+        let library = LibraryStore(locations: locations)
+        let engine = PlaybackEngine(
+            library: library, settings: AppSettings(defaults: try Fixtures.defaults(from: "Settings-v1")), locations: locations
+        )
+        await library.refresh()
+        await engine.restore()
+        engine.saveState()
+        await library.saveNow()
+
+        XCTAssertTrue(library.isReadOnly)
+        XCTAssertNotNil(library.notice)
+        // Музыка доступна в этой сессии…
+        XCTAssertEqual(library.tracks.filter { !$0.isMissing }.count, original.tracks.filter { !$0.isMissing }.count)
+        // …но ничего не перезаписано.
+        var isDirectory: ObjCBool = false
+        XCTAssertTrue(FileManager.default.fileExists(atPath: locations.libraryIndex.path(percentEncoded: false), isDirectory: &isDirectory))
+        XCTAssertTrue(isDirectory.boolValue)
+        XCTAssertEqual(try Data(contentsOf: locations.playbackState), playback)
+    }
+
     /// Файлы музыки с теми же размером и датой изменения, что записаны в индексе,
     /// плюс Library.json и Playback.json в формате v1.0.
     private func installV1Container(_ index: LibraryIndex, at locations: StorageLocations) throws {

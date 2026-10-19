@@ -48,6 +48,7 @@ final class PlaybackEngine {
     @ObservationIgnored private var publishedDuration: TimeInterval = 0
     @ObservationIgnored private var resumeAfterInterruption = false
     @ObservationIgnored private var didRestore = false
+    @ObservationIgnored private var restoreTask: Task<Void, Never>?
     @ObservationIgnored private var lastPersistedAt = Date.distantPast
     @ObservationIgnored private var persistSequence = 0
     @ObservationIgnored private var artworkTask: Task<Void, Never>?
@@ -80,7 +81,15 @@ final class PlaybackEngine {
     // MARK: - Restore
 
     /// Восстановить очередь и позицию с прошлого запуска. Звук не включается.
+    /// Повторные вызовы ждут первый.
     func restore() async {
+        if restoreTask == nil {
+            restoreTask = Task { await self.performRestore() }
+        }
+        await restoreTask?.value
+    }
+
+    private func performRestore() async {
         guard !didRestore else { return }
         await library.ensureLoaded()
         defer { didRestore = true }
@@ -737,8 +746,9 @@ final class PlaybackEngine {
     // MARK: - Persistence
 
     private func persist(force: Bool = false) {
-        // До восстановления не перезаписываем сохранённое пустым состоянием.
-        guard didRestore else { return }
+        // До восстановления не перезаписываем сохранённое пустым состоянием,
+        // а при недоступной библиотеке — очередью из «незнакомых» треков.
+        guard didRestore, !library.isReadOnly else { return }
         let now = Date.now
         guard force || now.timeIntervalSince(lastPersistedAt) >= Self.persistInterval else { return }
         lastPersistedAt = now

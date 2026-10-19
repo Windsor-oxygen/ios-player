@@ -6,7 +6,6 @@ extension DS {
     enum Font {
         static let title = SwiftUI.Font.system(.title2, design: .rounded, weight: .bold)
         static let subtitle = SwiftUI.Font.system(.title3, design: .rounded, weight: .medium)
-        static let headline = SwiftUI.Font.system(.headline, design: .rounded, weight: .semibold)
         static let body = SwiftUI.Font.body
         static let bodyEmphasized = SwiftUI.Font.body.weight(.semibold)
         static let callout = SwiftUI.Font.callout
