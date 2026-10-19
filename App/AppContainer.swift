@@ -8,6 +8,7 @@ final class AppContainer {
     let playback: PlaybackEngine
     let downloads: DownloadManager
     let presenter = AppPresenter()
+    let appIcons = AppIconController()
     /// Хранилище настроек, в том числе для `@AppStorage`.
     let defaults: UserDefaults
 

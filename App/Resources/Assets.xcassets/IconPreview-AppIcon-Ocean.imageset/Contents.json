@@ -1,0 +1,22 @@
+{
+  "images" : [
+    {
+      "filename" : "IconPreview-AppIcon-Ocean.png",
+      "idiom" : "universal"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "IconPreview-AppIcon-Ocean-Dark.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

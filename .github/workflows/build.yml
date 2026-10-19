@@ -136,6 +136,7 @@ jobs:
             echo "::error::В Release-сборке найден демо-режим (PlayerDemo)" >&2
             exit 1
           fi
+          .github/scripts/check_icons.sh "$app" App/Resources/Assets.xcassets
           plutil -p "$app/Info.plist" | grep -E 'CFBundleDisplayName|CFBundleIdentifier|UIBackgroundModes|MinimumOSVersion' -A2 || true
           rm -rf build && mkdir -p build/Payload
           cp -R "$app" build/Payload/

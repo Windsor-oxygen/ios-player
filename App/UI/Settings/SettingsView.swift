@@ -4,18 +4,29 @@ struct SettingsView: View {
     @Environment(AppSettings.self) private var settings
     @Environment(LibraryStore.self) private var library
     @Environment(PlaybackEngine.self) private var engine
+    @Environment(AppPresenter.self) private var presenter
+    @Environment(AppIconController.self) private var icons
     @Environment(\.dismiss) private var dismiss
     @State private var confirmsCleanup = false
 
     var body: some View {
         @Bindable var settings = settings
+        @Bindable var presenter = presenter
 
-        NavigationStack {
+        NavigationStack(path: $presenter.settingsPath) {
             Form {
                 Section("Оформление") {
                     Picker("Тема", selection: $settings.appearance) {
                         ForEach(AppearanceMode.allCases) { mode in
                             Text(mode.label).tag(mode)
+                        }
+                    }
+                    NavigationLink(value: SettingsRoute.appIcon) {
+                        LabeledContent("Иконка приложения") {
+                            HStack(spacing: DS.Spacing.s) {
+                                Text(icons.current.title)
+                                AppIconPreview(option: icons.current, side: DS.Size.iconPreviewInline)
+                            }
                         }
                     }
                 }
@@ -57,6 +68,12 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Настройки")
+            .navigationDestination(for: SettingsRoute.self) { route in
+                switch route {
+                case .appIcon: AppIconPickerView()
+                }
+            }
+            .onAppear { icons.refresh() }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {

@@ -188,6 +188,23 @@
         }
       }
     },
+    "Аврора": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aurora"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Аврора"
+          }
+        }
+      }
+    },
     "Альбом или исполнитель": {
       "extractionState": "manual",
       "localizations": {
@@ -252,6 +269,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Библиотека"
+          }
+        }
+      }
+    },
+    "Бумага": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paper"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Бумага"
           }
         }
       }
@@ -545,6 +579,23 @@
         }
       }
     },
+    "Графит": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Graphite"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Графит"
+          }
+        }
+      }
+    },
     "Далее": {
       "extractionState": "manual",
       "localizations": {
@@ -817,6 +868,23 @@
         }
       }
     },
+    "Закат": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sunset"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Закат"
+          }
+        }
+      }
+    },
     "Закрыть": {
       "extractionState": "manual",
       "localizations": {
@@ -885,6 +953,40 @@
         }
       }
     },
+    "Иконка не изменена": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Icon Not Changed"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Иконка не изменена"
+          }
+        }
+      }
+    },
+    "Иконка приложения": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Icon"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Иконка приложения"
+          }
+        }
+      }
+    },
     "Исполнители": {
       "extractionState": "manual",
       "localizations": {
@@ -949,6 +1051,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Как в системе"
+          }
+        }
+      }
+    },
+    "Мята": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mint"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Мята"
           }
         }
       }
@@ -1089,6 +1208,23 @@
         }
       }
     },
+    "Не удалось сменить иконку. Попробуйте ещё раз. (%@)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t change the icon. Please try again. (%@)"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось сменить иконку. Попробуйте ещё раз. (%@)"
+          }
+        }
+      }
+    },
     "Недостаточно места на iPhone для этого файла.": {
       "extractionState": "manual",
       "localizations": {
@@ -1153,6 +1289,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Неизвестный исполнитель"
+          }
+        }
+      }
+    },
+    "Неон": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neon"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Неон"
           }
         }
       }
@@ -1306,6 +1459,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Обновление библиотеки…"
+          }
+        }
+      }
+    },
+    "Океан": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ocean"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Океан"
           }
         }
       }
@@ -1918,6 +2088,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Положите файлы в «Файлы» → «На iPhone» → «Player»"
+          }
+        }
+      }
+    },
+    "После выбора iOS покажет системное уведомление о смене значка — это нормально. Музыка и настройки не меняются.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "After you choose, iOS shows a system alert about the icon change — that’s expected. Your music and settings stay the same."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "После выбора iOS покажет системное уведомление о смене значка — это нормально. Музыка и настройки не меняются."
           }
         }
       }
@@ -2683,6 +2870,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Экран блокировки"
+          }
+        }
+      }
+    },
+    "Эта версия iOS не позволяет менять иконку приложения.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This version of iOS doesn’t allow changing the app icon."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Эта версия iOS не позволяет менять иконку приложения."
           }
         }
       }

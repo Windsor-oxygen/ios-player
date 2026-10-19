@@ -69,7 +69,10 @@ struct DemoMode {
         case .nowPlaying:
             container.playback.play()
             container.presenter.showsNowPlaying = true
-        case .settings, .icons:
+        case .settings:
+            container.presenter.showsSettings = true
+        case .icons:
+            container.presenter.settingsPath = [.appIcon]
             container.presenter.showsSettings = true
         case .empty:
             break

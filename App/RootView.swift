@@ -32,7 +32,7 @@ struct RootView: View {
             NowPlayingView()
                 .nowPlayingTransition(namespace: playerNamespace, reduceMotion: reduceMotion)
         }
-        .sheet(isPresented: $presenter.showsSettings) {
+        .sheet(isPresented: $presenter.showsSettings, onDismiss: { presenter.settingsPath = [] }) {
             SettingsView()
         }
         .fileImporter(

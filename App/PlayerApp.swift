@@ -13,6 +13,7 @@ struct PlayerApp: App {
                 .environment(container.playback)
                 .environment(container.downloads)
                 .environment(container.presenter)
+                .environment(container.appIcons)
                 .defaultAppStorage(container.defaults)
                 .preferredColorScheme(container.settings.appearance.colorScheme)
                 .task { await container.playback.restore() }
