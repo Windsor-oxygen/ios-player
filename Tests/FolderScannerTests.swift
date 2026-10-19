@@ -23,6 +23,7 @@ final class FolderScannerTests: XCTestCase {
         try TestSupport.write(bytes, to: docs.appending(path: "Music/bad.ogg"))
         try TestSupport.write(bytes, to: docs.appending(path: "Music/.hidden.mp3"))
         try TestSupport.write(bytes, to: docs.appending(path: "Inbox/Pending.mp3"))
+        try TestSupport.write(bytes, to: locations.notImported.appending(path: "Broken.mp3"))
 
         let paths = Set(FolderScanner.scan(locations).map(\.relativePath))
         XCTAssertEqual(paths, ["Root.mp3", "Music/Album/One.flac", "Music/Two.M4A"])

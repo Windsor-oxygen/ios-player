@@ -7,22 +7,31 @@ struct PlaybackSnapshot: Codable, Equatable, Sendable {
 }
 
 /// Атомарное сохранение снимка воспроизведения вне main thread.
+/// Нечитаемый файл не перезаписывается без резервной копии.
 actor PlaybackSnapshotStore {
     private let fileURL: URL
     /// Номер последнего записанного снимка: более старые запросы игнорируются.
     private var lastSequence = 0
+    private var isWriteProtected = false
 
     init(fileURL: URL) {
         self.fileURL = fileURL
     }
 
     func load() -> PlaybackSnapshot? {
-        guard let data = try? Data(contentsOf: fileURL) else { return nil }
-        return try? JSONDecoder().decode(PlaybackSnapshot.self, from: data)
+        guard FileManager.default.fileExists(atPath: fileURL.path(percentEncoded: false)) else { return nil }
+        do {
+            let data = try Data(contentsOf: fileURL)
+            return try JSONDecoder().decode(PlaybackSnapshot.self, from: data)
+        } catch {
+            Log.playback.error("Playback.json не читается: \(error.localizedDescription, privacy: .public)")
+            isWriteProtected = FileBackup.makeCopy(of: fileURL) == nil
+            return nil
+        }
     }
 
     func save(_ snapshot: PlaybackSnapshot, sequence: Int) {
-        guard sequence > lastSequence else { return }
+        guard sequence > lastSequence, !isWriteProtected else { return }
         lastSequence = sequence
         do {
             try FileManager.default.createDirectory(

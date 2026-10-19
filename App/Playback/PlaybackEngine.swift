@@ -541,7 +541,7 @@ final class PlaybackEngine {
         }
     }
 
-    /// Плеер сам перешёл к другому элементу (обычно — к предзагруженному следующему).
+    /// AVQueuePlayer сам перешёл к другому элементу (обычно — к предзагруженному следующему).
     private func syncCurrentItem() {
         let newID = player.currentItem.map(ObjectIdentifier.init)
         guard newID != currentItemID else { return }

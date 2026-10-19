@@ -49,7 +49,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Библиотека")
                 } footer: {
-                    Text("Песен: \(library.tracks.count). Файлы лежат в «Файлы» → «На iPhone» → «Плеер».")
+                    Text("Песен: \(library.tracks.count). Файлы лежат в «Файлы» → «На iPhone» → «Player».")
                 }
 
                 Section("О приложении") {
@@ -71,7 +71,7 @@ struct SettingsView: View {
                 titleVisibility: .visible
             ) {
                 Button("Убрать", role: .destructive) {
-                    Task { await library.delete(Set(missingIDs)) }
+                    library.forget(Set(missingIDs))
                 }
                 Button("Отмена", role: .cancel) {}
             }

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Генератор иконки приложения «Плеер» и логотипа для launch screen.
+"""Генератор иконки приложения Player и логотипа для launch screen.
 
 Зависимость: только Pillow (`pip install Pillow`).
 Запуск из корня репозитория:  python3 tools/make_icon.py

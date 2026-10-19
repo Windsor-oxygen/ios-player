@@ -108,7 +108,8 @@ def collect_keys() -> set[str]:
         for start, parts in string_literals(text):
             line_start = text.rfind("\n", 0, start) + 1
             line = text[line_start:start]
-            if "Log." in line or "Logger(" in line:
+            # Журнал и имена файлов/папок на диске не переводятся.
+            if "Log." in line or "Logger(" in line or "appending(path:" in line:
                 continue
             before = text[max(0, start - 80):start]
             plain = "".join(p for p in parts if isinstance(p, str))

@@ -256,7 +256,7 @@
         }
       }
     },
-    "В другом приложении: «Поделиться» → «Плеер»": {
+    "В другом приложении: «Поделиться» → «Player»": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -268,7 +268,7 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "В другом приложении: «Поделиться» → «Плеер»"
+            "value": "В другом приложении: «Поделиться» → «Player»"
           }
         }
       }
@@ -405,6 +405,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Воспроизвести"
+          }
+        }
+      }
+    },
+    "Восстановленный плейлист": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recovered Playlist"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Восстановленный плейлист"
           }
         }
       }
@@ -1038,6 +1055,23 @@
         }
       }
     },
+    "Не удалось прочитать файл библиотеки. Чтобы ничего не потерять, изменения в этот раз не сохраняются. Перезапустите приложение.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The library file couldn’t be read. To avoid losing anything, changes won’t be saved this time. Restart the app."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось прочитать файл библиотеки. Чтобы ничего не потерять, изменения в этот раз не сохраняются. Перезапустите приложение."
+          }
+        }
+      }
+    },
     "Не удалось скопировать файл: %@": {
       "extractionState": "manual",
       "localizations": {
@@ -1565,7 +1599,7 @@
         }
       }
     },
-    "Песен: %lld. Файлы лежат в «Файлы» → «На iPhone» → «Плеер».": {
+    "Песен: %lld. Файлы лежат в «Файлы» → «На iPhone» → «Player».": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -1577,7 +1611,7 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Песен: %lld. Файлы лежат в «Файлы» → «На iPhone» → «Плеер»."
+            "value": "Песен: %lld. Файлы лежат в «Файлы» → «На iPhone» → «Player»."
           }
         }
       }
@@ -1871,7 +1905,7 @@
         }
       }
     },
-    "Положите файлы в «Файлы» → «На iPhone» → «Плеер»": {
+    "Положите файлы в «Файлы» → «На iPhone» → «Player»": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -1883,7 +1917,7 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Положите файлы в «Файлы» → «На iPhone» → «Плеер»"
+            "value": "Положите файлы в «Файлы» → «На iPhone» → «Player»"
           }
         }
       }
@@ -2483,19 +2517,36 @@
         }
       }
     },
-    "Файл библиотеки был повреждён и создан заново. Музыкальные файлы не пострадали — они будут найдены повторно, но плейлисты потеряны.": {
+    "Файл библиотеки был повреждён. Его копия сохранена, библиотека восстановлена, плейлистов спасено: %lld. Музыкальные файлы не пострадали.": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The library file was damaged and has been recreated. Your music files are safe and will be found again, but playlists were lost."
+            "value": "The library file was damaged. A copy of it was saved and the library was restored; playlists recovered: %lld. Your music files are safe."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Файл библиотеки был повреждён и создан заново. Музыкальные файлы не пострадали — они будут найдены повторно, но плейлисты потеряны."
+            "value": "Файл библиотеки был повреждён. Его копия сохранена, библиотека восстановлена, плейлистов спасено: %lld. Музыкальные файлы не пострадали."
+          }
+        }
+      }
+    },
+    "Файл библиотеки повреждён, а сделать его копию не удалось. Чтобы ничего не потерять, изменения в этот раз не сохраняются. Освободите место на iPhone и перезапустите приложение.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The library file is damaged and a backup copy couldn’t be made. To avoid losing anything, changes won’t be saved this time. Free up space on your iPhone and restart the app."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Файл библиотеки повреждён, а сделать его копию не удалось. Чтобы ничего не потерять, изменения в этот раз не сохраняются. Освободите место на iPhone и перезапустите приложение."
           }
         }
       }
@@ -2632,6 +2683,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Экран блокировки"
+          }
+        }
+      }
+    },
+    "Эти файлы не удалены: они лежат в «Файлы» → «На iPhone» → «Player» → «Не импортировано».": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These files were not deleted: they are in “Files” → “On My iPhone” → “Player” → “Не импортировано”."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Эти файлы не удалены: они лежат в «Файлы» → «На iPhone» → «Player» → «Не импортировано»."
           }
         }
       }

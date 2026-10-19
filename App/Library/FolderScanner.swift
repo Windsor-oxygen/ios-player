@@ -7,7 +7,7 @@ struct ScannedFile: Equatable, Sendable {
     let modificationDate: Date
 }
 
-/// Обход Documents (рекурсивно, без скрытых файлов и Inbox).
+/// Обход Documents (рекурсивно, без скрытых файлов, Inbox и «Не импортировано»).
 enum FolderScanner {
     static func scan(_ locations: StorageLocations) -> [ScannedFile] {
         let keys: [URLResourceKey] = [.isRegularFileKey, .isDirectoryKey, .fileSizeKey, .contentModificationDateKey]
@@ -17,13 +17,12 @@ enum FolderScanner {
             options: [.skipsHiddenFiles, .skipsPackageDescendants]
         ) else { return [] }
 
-        let inboxPath = locations.inbox.standardizedFileURL.resolvingSymlinksInPath().path(percentEncoded: false)
+        let skipped = Set([locations.inbox, locations.notImported].map(canonicalPath))
         var result: [ScannedFile] = []
         for case let url as URL in enumerator {
             guard let values = try? url.resourceValues(forKeys: Set(keys)) else { continue }
             if values.isDirectory == true {
-                let path = url.standardizedFileURL.resolvingSymlinksInPath().path(percentEncoded: false)
-                if path == inboxPath { enumerator.skipDescendants() }
+                if skipped.contains(canonicalPath(url)) { enumerator.skipDescendants() }
                 continue
             }
             guard values.isRegularFile == true,
@@ -36,6 +35,12 @@ enum FolderScanner {
             ))
         }
         return result
+    }
+
+    /// Путь без симлинков и завершающего «/» — для сравнения папок.
+    private static func canonicalPath(_ url: URL) -> String {
+        let path = url.standardizedFileURL.resolvingSymlinksInPath().path(percentEncoded: false)
+        return path.hasSuffix("/") ? String(path.dropLast()) : path
     }
 }
 

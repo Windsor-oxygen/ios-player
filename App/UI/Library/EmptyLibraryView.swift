@@ -24,8 +24,8 @@ struct EmptyLibraryView: View {
 
                 VStack(alignment: .leading, spacing: 16) {
                     Label("«+» → «Из Файлов» — скопировать песни с iPhone или iCloud Drive", systemImage: "folder")
-                    Label("В другом приложении: «Поделиться» → «Плеер»", systemImage: "square.and.arrow.up")
-                    Label("Положите файлы в «Файлы» → «На iPhone» → «Плеер»", systemImage: "iphone")
+                    Label("В другом приложении: «Поделиться» → «Player»", systemImage: "square.and.arrow.up")
+                    Label("Положите файлы в «Файлы» → «На iPhone» → «Player»", systemImage: "iphone")
                     Label("«+» → «По ссылке» — прямая ссылка https:// на файл", systemImage: "link")
                 }
                 .font(.callout)
