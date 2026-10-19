@@ -1,0 +1,80 @@
+{
+  "version" : 1,
+  "tracks" : [
+    {
+      "id" : "11111111-1111-4111-8111-111111111111",
+      "relativePath" : "Music/Северное сияние.wav",
+      "title" : "Северное сияние",
+      "artist" : "Полярный экспресс",
+      "album" : "Зима",
+      "trackNumber" : 1,
+      "discNumber" : 1,
+      "duration" : 215.5,
+      "fileSize" : 8044,
+      "modificationDate" : 780000000,
+      "dateAdded" : 781000000.5,
+      "artworkKey" : "0f1e2d3c4b5a69788796a5b4c3d2e1f00f1e2d3c4b5a69788796a5b4c3d2e1f0",
+      "isMissing" : false,
+      "isUnplayable" : false,
+      "needsMetadata" : false
+    },
+    {
+      "id" : "22222222-2222-4222-8222-222222222222",
+      "relativePath" : "Music/Альбом/02 Second Song.wav",
+      "title" : "Second Song",
+      "artist" : "Полярный экспресс",
+      "album" : "Зима",
+      "trackNumber" : 2,
+      "duration" : 187,
+      "fileSize" : 8044,
+      "modificationDate" : 780000000,
+      "dateAdded" : 781000001,
+      "isMissing" : false,
+      "isUnplayable" : false,
+      "needsMetadata" : false
+    },
+    {
+      "id" : "33333333-3333-4333-8333-333333333333",
+      "relativePath" : "Music/Без тегов.wav",
+      "title" : "Без тегов",
+      "duration" : 64.25,
+      "fileSize" : 8044,
+      "modificationDate" : 780000000,
+      "dateAdded" : 781000002,
+      "isMissing" : false,
+      "isUnplayable" : false,
+      "needsMetadata" : false
+    },
+    {
+      "id" : "44444444-4444-4444-8444-444444444444",
+      "relativePath" : "Music/Удалённая через Файлы.mp3",
+      "title" : "Удалённая через Файлы",
+      "artist" : "Кто-то",
+      "duration" : 120,
+      "fileSize" : 5000000,
+      "modificationDate" : 779000000,
+      "dateAdded" : 779500000,
+      "isMissing" : true,
+      "isUnplayable" : false,
+      "needsMetadata" : false
+    }
+  ],
+  "playlists" : [
+    {
+      "id" : "AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA",
+      "name" : "Любимое",
+      "trackIDs" : [
+        "33333333-3333-4333-8333-333333333333",
+        "11111111-1111-4111-8111-111111111111",
+        "33333333-3333-4333-8333-333333333333"
+      ],
+      "createdAt" : 782000000.25
+    },
+    {
+      "id" : "BBBBBBBB-BBBB-4BBB-8BBB-BBBBBBBBBBBB",
+      "name" : "Пустой",
+      "trackIDs" : [],
+      "createdAt" : 782000100
+    }
+  ]
+}

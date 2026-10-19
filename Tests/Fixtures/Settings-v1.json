@@ -1,0 +1,6 @@
+{
+  "settings.appearance" : "light",
+  "settings.skipInterval" : 30,
+  "settings.lockScreenControls" : "skip",
+  "songs.sort" : "artist"
+}
