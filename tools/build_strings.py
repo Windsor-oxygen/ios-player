@@ -104,6 +104,9 @@ def to_key(parts) -> str:
 def collect_keys() -> set[str]:
     keys: set[str] = set()
     for path in sorted(SOURCES.rglob("*.swift")):
+        # Демо-данные для скриншотов (только Debug) не переводятся.
+        if "Debug" in path.relative_to(SOURCES).parts:
+            continue
         text = path.read_text(encoding="utf-8")
         for start, parts in string_literals(text):
             line_start = text.rfind("\n", 0, start) + 1

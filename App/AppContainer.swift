@@ -3,13 +3,17 @@ import Foundation
 /// Создаёт и связывает сервисы приложения. Живёт всё время работы приложения.
 @MainActor
 final class AppContainer {
-    let settings = AppSettings()
+    let settings: AppSettings
     let library: LibraryStore
     let playback: PlaybackEngine
     let downloads: DownloadManager
     let presenter = AppPresenter()
+    /// Хранилище настроек, в том числе для `@AppStorage`.
+    let defaults: UserDefaults
 
-    init(locations: StorageLocations = .standard) {
+    init(locations: StorageLocations = .standard, defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        settings = AppSettings(defaults: defaults)
         library = LibraryStore(locations: locations)
         playback = PlaybackEngine(library: library, settings: settings, locations: locations)
         downloads = DownloadManager(locations: locations, library: library)
@@ -17,5 +21,16 @@ final class AppContainer {
         library.onTracksChanged = { [weak playback] removed in
             playback?.libraryDidChange(removed: removed)
         }
+    }
+
+    /// Контейнер для запуска приложения. В Debug-сборке launch argument
+    /// `-PlayerDemo` подменяет данные демонстрационными (для скриншотов в CI).
+    static func launch() -> AppContainer {
+        #if DEBUG
+        if let demo = DemoMode.fromLaunchArguments() {
+            return demo.makeContainer()
+        }
+        #endif
+        return AppContainer()
     }
 }

@@ -2,7 +2,7 @@ import SwiftUI
 
 @main
 struct PlayerApp: App {
-    @State private var container = AppContainer()
+    @State private var container = AppContainer.launch()
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some Scene {
@@ -13,9 +13,13 @@ struct PlayerApp: App {
                 .environment(container.playback)
                 .environment(container.downloads)
                 .environment(container.presenter)
+                .defaultAppStorage(container.defaults)
                 .preferredColorScheme(container.settings.appearance.colorScheme)
                 .task { await container.playback.restore() }
                 .task { await container.library.refresh() }
+                #if DEBUG
+                .task { await DemoMode.present(in: container) }
+                #endif
                 // «Поделиться / Открыть в» из других приложений.
                 .onOpenURL { url in
                     Task { await container.library.importFiles([url]) }
