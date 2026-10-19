@@ -13,17 +13,17 @@ struct MiniPlayerView: View {
 
     var body: some View {
         if let track = engine.currentTrack {
-            HStack(spacing: 12) {
-                ArtworkView(key: track.artworkKey, cornerRadius: 8)
-                    .frame(width: 44, height: 44)
-                VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: DS.Spacing.m) {
+                ArtworkView(key: track.artworkKey, seed: track.title, cornerRadius: DS.Radius.m)
+                    .frame(width: DS.Size.miniArtwork, height: DS.Size.miniArtwork)
+                VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
                     Text(track.title)
-                        .font(.subheadline.weight(.semibold))
-                        .lineLimit(1)
+                        .font(DS.Font.miniTitle)
+                        .lineLimit(DS.LineLimit.rowTitle)
                     Text(track.artist ?? LibraryQuery.unknownArtist)
-                        .font(.caption)
+                        .font(DS.Font.caption)
                         .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                        .lineLimit(DS.LineLimit.rowTitle)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityElement(children: .combine)
@@ -36,9 +36,9 @@ struct MiniPlayerView: View {
                     engine.togglePlayPause()
                 } label: {
                     Image(systemName: engine.isPlaying ? "pause.fill" : "play.fill")
-                        .font(.system(size: 22, weight: .semibold))
+                        .font(DS.Font.controlIcon)
                         .contentTransition(.symbolEffect(.replace))
-                        .frame(width: 44, height: 44)
+                        .frame(width: DS.Size.tapTarget, height: DS.Size.tapTarget)
                 }
                 .accessibilityLabel(engine.isPlaying ? "Пауза" : "Воспроизвести")
                 .sensoryFeedback(.impact(weight: .medium), trigger: playTaps)
@@ -48,34 +48,36 @@ struct MiniPlayerView: View {
                     engine.next()
                 } label: {
                     Image(systemName: "forward.fill")
-                        .font(.system(size: 20, weight: .semibold))
-                        .frame(width: 44, height: 44)
+                        .font(DS.Font.controlIcon)
+                        .frame(width: DS.Size.tapTarget, height: DS.Size.tapTarget)
                 }
                 .accessibilityLabel("Следующий трек")
                 .sensoryFeedback(.impact(weight: .light), trigger: nextTaps)
             }
+            .foregroundStyle(.primary)
             .buttonStyle(PressScaleButtonStyle())
-            .padding(.leading, 8)
-            .padding(.trailing, 4)
-            .padding(.vertical, 8)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .padding(.leading, DS.Spacing.s)
+            .padding(.trailing, DS.Spacing.xs)
+            .padding(.vertical, DS.Spacing.s)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: DS.Radius.xl, style: .continuous))
             .overlay(alignment: .bottom) {
                 MiniProgressBar()
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, DS.Spacing.l)
             }
+            .dsShadow(DS.Shadow.miniPlayer)
             .matchedTransitionSource(id: Self.transitionID, in: namespace) { source in
-                source.clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                source.clipShape(RoundedRectangle(cornerRadius: DS.Radius.xl, style: .continuous))
             }
-            .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .contentShape(RoundedRectangle(cornerRadius: DS.Radius.xl, style: .continuous))
             .onTapGesture { open() }
             .gesture(
                 // Свайп вверх по мини-плееру тоже открывает плеер.
-                DragGesture(minimumDistance: 20).onEnded { value in
-                    if value.translation.height < -40 { open() }
+                DragGesture(minimumDistance: DS.Gesture.dragMinimum).onEnded { value in
+                    if value.translation.height < -DS.Gesture.openDistance { open() }
                 }
             )
-            .padding(.horizontal, 8)
-            .padding(.bottom, 4)
+            .padding(.horizontal, DS.Spacing.s)
+            .padding(.bottom, DS.Spacing.xs)
             .transition(.move(edge: .bottom).combined(with: .opacity))
         }
     }

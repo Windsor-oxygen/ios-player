@@ -57,7 +57,7 @@ struct QueueModeButtons: View {
     @Environment(PlaybackEngine.self) private var engine
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: DS.Spacing.xs) {
             Button {
                 engine.toggleShuffle()
             } label: {
@@ -91,10 +91,14 @@ struct QueueModeButtons: View {
 }
 
 private extension Image {
+    /// Активный режим — заливка акцентом; значок цвета фона (читается в обеих темах).
     func modeStyle(active: Bool) -> some View {
-        font(.system(size: 15, weight: .semibold))
-            .frame(width: 32, height: 28)
-            .foregroundStyle(active ? Color.black : Color.secondary)
-            .background(active ? Color.accentColor : Color.clear, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        font(DS.Font.modeIcon)
+            .frame(width: DS.Size.modeButton.width, height: DS.Size.modeButton.height)
+            .foregroundStyle(active ? Color(uiColor: .systemBackground) : Color.secondary)
+            .background(active ? Color.accentColor : Color.clear,
+                        in: RoundedRectangle(cornerRadius: DS.Radius.m, style: .continuous))
+            .frame(minWidth: DS.Size.tapTarget, minHeight: DS.Size.tapTarget)
+            .contentShape(Rectangle())
     }
 }

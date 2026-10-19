@@ -3,8 +3,6 @@ import SwiftUI
 struct SleepTimerMenu: View {
     @Environment(PlaybackEngine.self) private var engine
 
-    private static let options = [5, 15, 30, 45, 60, 90]
-
     var body: some View {
         Menu {
             switch engine.sleepTimer {
@@ -20,16 +18,16 @@ struct SleepTimerMenu: View {
                 }
             }
             Section("Таймер сна") {
-                ForEach(Self.options, id: \.self) { minutes in
+                ForEach(PlaybackEngine.sleepTimerOptions, id: \.self) { minutes in
                     Button("\(minutes) мин") { engine.startSleepTimer(minutes: minutes) }
                 }
                 Button("В конце трека") { engine.startSleepTimerAtEndOfTrack() }
             }
         } label: {
             Image(systemName: engine.sleepTimer == .off ? "moon.zzz" : "moon.zzz.fill")
-                .font(.system(size: 20, weight: .semibold))
-                .frame(width: 44, height: 44)
-                .foregroundStyle(engine.sleepTimer == .off ? .white.opacity(0.7) : .white)
+                .font(DS.Font.controlIcon)
+                .frame(width: DS.Size.tapTarget, height: DS.Size.tapTarget)
+                .foregroundStyle(engine.sleepTimer == .off ? DS.Palette.onArtworkSecondary : Color.accentColor)
         }
         .accessibilityLabel(engine.sleepTimer == .off ? "Таймер сна" : "Таймер сна включён")
     }

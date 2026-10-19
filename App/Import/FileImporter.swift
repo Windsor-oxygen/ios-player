@@ -39,6 +39,9 @@ struct ImportReport: Equatable, Sendable {
     var failures: [Failure] = []
     /// Сколько файлов отложено в «Не импортировано» (а не удалено).
     var setAsideCount = 0
+
+    /// Сколько ошибок перечислять в сообщении поимённо.
+    static let maxListedFailures = 5
 }
 
 /// Копирование файлов в Documents/Music. Все методы синхронные или

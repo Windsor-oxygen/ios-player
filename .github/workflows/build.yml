@@ -38,6 +38,10 @@ jobs:
           python3 tools/build_strings.py
           git diff --exit-code -- App/Resources/Localizable.xcstrings
 
+      # Дизайн-система: во View нет «магических» чисел, только токены DS.*.
+      - name: Check design tokens
+        run: python3 tools/check_design_tokens.py
+
       - name: Select Xcode
         id: xcode
         run: .github/scripts/select_xcode.sh

@@ -2,7 +2,7 @@ import Foundation
 
 /// Текст алерта по итогам импорта.
 enum ImportReportText {
-    private static let maxListedFailures = 5
+    private static let maxListedFailures = ImportReport.maxListedFailures
 
     static func title(_ report: ImportReport) -> String {
         let added = report.importedPaths.count

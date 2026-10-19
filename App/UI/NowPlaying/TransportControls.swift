@@ -9,9 +9,9 @@ struct TransportControls: View {
 
     var body: some View {
         HStack {
-            control("backward.fill", size: 28, label: "Предыдущий трек") { engine.previous() }
+            control("backward.fill", font: DS.Font.transportIcon, label: "Предыдущий трек") { engine.previous() }
             Spacer()
-            control("gobackward.\(settings.skipInterval)", size: 24,
+            control("gobackward.\(settings.skipInterval)", font: DS.Font.skipIcon,
                     label: "Назад на \(settings.skipInterval) секунд") {
                 engine.skip(by: -TimeInterval(settings.skipInterval))
             }
@@ -21,52 +21,41 @@ struct TransportControls: View {
                 engine.togglePlayPause()
             } label: {
                 Image(systemName: engine.isPlaying ? "pause.fill" : "play.fill")
-                    .font(.system(size: 34, weight: .bold))
+                    .font(DS.Font.playIcon)
                     .contentTransition(.symbolEffect(.replace))
-                    .frame(width: 76, height: 76)
-                    .background(.white, in: Circle())
-                    .foregroundStyle(.black)
-                    .shadow(color: .black.opacity(0.25), radius: 12, y: 6)
+                    .foregroundStyle(DS.Palette.playButtonForeground)
+                    .frame(width: DS.Size.playButton, height: DS.Size.playButton)
+                    .background(DS.Palette.playButtonBackground, in: Circle())
+                    .dsShadow(DS.Shadow.control)
+                    .accentGlow(settings.accent.glows, color: settings.accent.color)
             }
             .buttonStyle(PressScaleButtonStyle())
             .accessibilityLabel(engine.isPlaying ? "Пауза" : "Воспроизвести")
             .sensoryFeedback(.impact(weight: .medium), trigger: playTaps)
             Spacer()
-            control("goforward.\(settings.skipInterval)", size: 24,
+            control("goforward.\(settings.skipInterval)", font: DS.Font.skipIcon,
                     label: "Вперёд на \(settings.skipInterval) секунд") {
                 engine.skip(by: TimeInterval(settings.skipInterval))
             }
             Spacer()
-            control("forward.fill", size: 28, label: "Следующий трек") { engine.next() }
+            control("forward.fill", font: DS.Font.transportIcon, label: "Следующий трек") { engine.next() }
         }
-        .foregroundStyle(.white)
+        .foregroundStyle(DS.Palette.onArtwork)
         .sensoryFeedback(.impact(weight: .light), trigger: skipTaps)
     }
 
-    private func control(_ symbol: String, size: CGFloat, label: LocalizedStringKey,
+    private func control(_ symbol: String, font: Font, label: LocalizedStringKey,
                          action: @escaping () -> Void) -> some View {
         Button {
             skipTaps += 1
             action()
         } label: {
             Image(systemName: symbol)
-                .font(.system(size: size, weight: .semibold))
-                .frame(width: 48, height: 48)
+                .font(font)
+                .frame(width: DS.Size.transportButton, height: DS.Size.transportButton)
                 .contentShape(Rectangle())
         }
         .buttonStyle(PressScaleButtonStyle())
         .accessibilityLabel(label)
-    }
-}
-
-/// Лёгкое «вдавливание» кнопки при нажатии (без анимации при Reduce Motion).
-struct PressScaleButtonStyle: ButtonStyle {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.88 : 1)
-            .opacity(configuration.isPressed ? 0.75 : 1)
-            .animation(reduceMotion ? nil : .spring(response: 0.25, dampingFraction: 0.7), value: configuration.isPressed)
     }
 }

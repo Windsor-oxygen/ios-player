@@ -40,18 +40,19 @@ private struct ArtistRow: View {
     let artist: Artist
 
     var body: some View {
-        HStack(spacing: 12) {
-            ArtworkView(key: artist.artworkKey, cornerRadius: 24)
-                .frame(width: 48, height: 48)
-            VStack(alignment: .leading, spacing: 2) {
+        HStack(spacing: DS.Spacing.m) {
+            ArtworkView(key: artist.artworkKey, seed: artist.name, cornerRadius: DS.Size.rowArtwork * DS.Radius.circleRatio)
+                .frame(width: DS.Size.rowArtwork, height: DS.Size.rowArtwork)
+            VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
                 Text(artist.name)
-                    .lineLimit(1)
+                    .font(DS.Font.body)
+                    .lineLimit(DS.LineLimit.rowTitle)
                 Text("Песен: \(artist.trackIDs.count)")
-                    .font(.subheadline)
+                    .font(DS.Font.subheadline)
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, DS.Spacing.xs)
         .accessibilityElement(children: .combine)
     }
 }
@@ -63,6 +64,7 @@ struct ArtistDetailView: View {
     @Environment(PlaybackEngine.self) private var engine
     @State private var pendingDeletion: Track?
     @State private var playlistTarget: TrackSelection?
+    @ScaledMetric(relativeTo: .body) private var carouselWidth = DS.Size.albumCarousel
 
     var body: some View {
         if let artist = library.artist(id: artistID) {
@@ -71,17 +73,17 @@ struct ArtistDetailView: View {
                 if !albums.isEmpty {
                     Section("Альбомы") {
                         ScrollView(.horizontal, showsIndicators: false) {
-                            LazyHStack(alignment: .top, spacing: 16) {
+                            LazyHStack(alignment: .top, spacing: DS.Spacing.l) {
                                 ForEach(albums) { album in
                                     NavigationLink(value: AlbumRoute(id: album.id)) {
                                         AlbumCell(album: album)
-                                            .frame(width: 144)
+                                            .frame(width: carouselWidth)
                                     }
-                                    .buttonStyle(.plain)
+                                    .buttonStyle(PressScaleButtonStyle())
                                 }
                             }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
+                            .padding(.horizontal, DS.Spacing.l)
+                            .padding(.vertical, DS.Spacing.s)
                         }
                         .listRowInsets(EdgeInsets())
                     }
@@ -103,7 +105,7 @@ struct ArtistDetailView: View {
             .navigationTitle(artist.name)
             .trackActionsHost(pendingDeletion: $pendingDeletion, playlistTarget: $playlistTarget)
         } else {
-            ContentUnavailableView("Исполнитель не найден", systemImage: "music.mic")
+            EmptyStateView(symbol: "music.mic", title: "Исполнитель не найден")
         }
     }
 }

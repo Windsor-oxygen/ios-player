@@ -57,6 +57,8 @@ final class PlaybackEngine {
     /// «Назад» в первые 3 секунды переключает трек, позже — перематывает в начало.
     static let restartThreshold: TimeInterval = 3
     private static let persistInterval: TimeInterval = 10
+    /// Варианты таймера сна, минуты.
+    static let sleepTimerOptions = [5, 15, 30, 45, 60, 90]
 
     init(library: LibraryStore, settings: AppSettings, locations: StorageLocations) {
         self.library = library

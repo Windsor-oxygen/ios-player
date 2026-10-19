@@ -65,6 +65,8 @@ final class SettingsCompatibilityTests: XCTestCase {
         XCTAssertEqual(settings.appearance, .light)
         XCTAssertEqual(settings.skipInterval, 30)
         XCTAssertEqual(settings.lockScreenControls, .skip)
+        // Новая настройка 1.1 при обновлении получает значение по умолчанию.
+        XCTAssertEqual(settings.accent, .fuchsia)
         XCTAssertEqual(defaults.string(forKey: "songs.sort").flatMap(SongSort.init(rawValue:)), .artist)
     }
 }

@@ -63,16 +63,16 @@ struct URLDownloadSheet: View {
             EmptyView()
         case .downloading(let received, let expected):
             Section {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: DS.Spacing.s) {
                     if let expected {
                         ProgressView(value: Double(received), total: Double(max(expected, 1)))
                         Text("\(received.formatted(.byteCount(style: .file))) из \(expected.formatted(.byteCount(style: .file)))")
-                            .font(.footnote.monospacedDigit())
+                            .font(DS.Font.duration)
                             .foregroundStyle(.secondary)
                     } else {
                         ProgressView()
                         Text("Загружено \(received.formatted(.byteCount(style: .file)))")
-                            .font(.footnote.monospacedDigit())
+                            .font(DS.Font.duration)
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -80,7 +80,7 @@ struct URLDownloadSheet: View {
             }
         case .importing:
             Section {
-                HStack(spacing: 8) {
+                HStack(spacing: DS.Spacing.s) {
                     ProgressView()
                     Text("Проверка файла…")
                 }
@@ -90,7 +90,7 @@ struct URLDownloadSheet: View {
                 Label {
                     Text("Добавлено: \(fileName)")
                 } icon: {
-                    Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                    Image(systemName: "checkmark.circle.fill").foregroundStyle(DS.Palette.success)
                 }
             }
         case .failed(let message):
@@ -98,7 +98,7 @@ struct URLDownloadSheet: View {
                 Label {
                     Text(message)
                 } icon: {
-                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(DS.Palette.warning)
                 }
             }
         }

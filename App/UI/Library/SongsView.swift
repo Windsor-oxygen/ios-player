@@ -38,7 +38,7 @@ struct SongsView: View {
                 .task(id: listKey) {
                     // Небольшая задержка при вводе — не пересчитываем на каждую букву.
                     if !query.isEmpty {
-                        try? await Task.sleep(for: .milliseconds(200))
+                        try? await Task.sleep(for: LibraryQuery.searchDebounce)
                         if Task.isCancelled { return }
                     }
                     let result = await LibraryQuery.songs(library.tracks, sort: sort, query: query)
@@ -69,9 +69,9 @@ struct SongsView: View {
             .overlay(alignment: .bottom) {
                 if library.isRefreshing {
                     ProgressView()
-                        .padding(8)
+                        .padding(DS.Spacing.s)
                         .background(.regularMaterial, in: Capsule())
-                        .padding(.bottom, 16)
+                        .padding(.bottom, DS.Spacing.l)
                 }
             }
         }

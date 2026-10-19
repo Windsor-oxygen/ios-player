@@ -21,6 +21,11 @@ struct SettingsView: View {
                             Text(mode.label).tag(mode)
                         }
                     }
+                    VStack(alignment: .leading, spacing: DS.Spacing.m) {
+                        LabeledContent("Акцентный цвет", value: settings.accent.title)
+                        AccentPicker(selection: $settings.accent)
+                    }
+                    .padding(.vertical, DS.Spacing.xs)
                     NavigationLink(value: SettingsRoute.appIcon) {
                         LabeledContent("Иконка приложения") {
                             HStack(spacing: DS.Spacing.s) {

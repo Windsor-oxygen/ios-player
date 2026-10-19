@@ -205,6 +205,23 @@
         }
       }
     },
+    "Акцентный цвет": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accent Color"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Акцентный цвет"
+          }
+        }
+      }
+    },
     "Альбом или исполнитель": {
       "extractionState": "manual",
       "localizations": {
@@ -783,6 +800,23 @@
         }
       }
     },
+    "Добавьте песни из библиотеки.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add songs from your library."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавьте песни из библиотеки."
+          }
+        }
+      }
+    },
     "Добавьте песни одним из способов:": {
       "extractionState": "manual",
       "localizations": {
@@ -1055,6 +1089,23 @@
         }
       }
     },
+    "Лазурь": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Azure"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Лазурь"
+          }
+        }
+      }
+    },
     "Мята": {
       "extractionState": "manual",
       "localizations": {
@@ -1068,6 +1119,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Мята"
+          }
+        }
+      }
+    },
+    "На паузе": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paused"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На паузе"
           }
         }
       }
@@ -2806,6 +2874,23 @@
         }
       }
     },
+    "Фиалка": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Violet"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Фиалка"
+          }
+        }
+      }
+    },
     "Формат %@ не поддерживается iOS. Подходят MP3, M4A/AAC, ALAC, WAV, AIFF и FLAC.": {
       "extractionState": "manual",
       "localizations": {
@@ -2853,6 +2938,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Формат .%@ не поддерживается iOS. Подходят MP3, M4A/AAC, ALAC, WAV, AIFF и FLAC."
+          }
+        }
+      }
+    },
+    "Фуксия": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fuchsia"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Фуксия"
           }
         }
       }
@@ -2921,6 +3023,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Это не похоже на ссылку. Адрес должен начинаться с https://"
+          }
+        }
+      }
+    },
+    "Янтарь": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Amber"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Янтарь"
           }
         }
       }

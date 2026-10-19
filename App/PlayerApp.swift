@@ -16,6 +16,7 @@ struct PlayerApp: App {
                 .environment(container.appIcons)
                 .defaultAppStorage(container.defaults)
                 .preferredColorScheme(container.settings.appearance.colorScheme)
+                .tint(container.settings.accent.color)
                 .task { await container.playback.restore() }
                 .task { await container.library.refresh() }
                 #if DEBUG

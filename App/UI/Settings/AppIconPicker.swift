@@ -27,7 +27,7 @@ struct AppIconPickerView: View {
                     }
                 }
                 Text("После выбора iOS покажет системное уведомление о смене значка — это нормально. Музыка и настройки не меняются.")
-                    .font(.footnote)
+                    .font(DS.Font.footnote)
                     .foregroundStyle(.secondary)
             }
             .padding(DS.Spacing.l)
@@ -68,14 +68,14 @@ private struct AppIconCell: View {
                     .overlay(alignment: .bottomTrailing) {
                         if isSelected {
                             Image(systemName: "checkmark.circle.fill")
-                                .font(.title3)
+                                .font(DS.Font.badgeIcon)
                                 .symbolRenderingMode(.palette)
                                 .foregroundStyle(.white, Color.accentColor)
                                 .transition(.scale.combined(with: .opacity))
                         }
                     }
                 Text(option.title)
-                    .font(.caption.weight(isSelected ? .semibold : .regular))
+                    .font(isSelected ? DS.Font.captionEmphasized : DS.Font.caption)
                     .foregroundStyle(isSelected ? .primary : .secondary)
                     .multilineTextAlignment(.center)
             }
