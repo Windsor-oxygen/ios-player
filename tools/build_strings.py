@@ -104,11 +104,15 @@ def to_key(parts) -> str:
 def collect_keys() -> set[str]:
     keys: set[str] = set()
     for path in sorted(SOURCES.rglob("*.swift")):
+        # Демо-данные для скриншотов (только Debug) не переводятся.
+        if "Debug" in path.relative_to(SOURCES).parts:
+            continue
         text = path.read_text(encoding="utf-8")
         for start, parts in string_literals(text):
             line_start = text.rfind("\n", 0, start) + 1
             line = text[line_start:start]
-            if "Log." in line or "Logger(" in line:
+            # Журнал и имена файлов/папок на диске не переводятся.
+            if "Log." in line or "Logger(" in line or "appending(path:" in line:
                 continue
             before = text[max(0, start - 80):start]
             plain = "".join(p for p in parts if isinstance(p, str))

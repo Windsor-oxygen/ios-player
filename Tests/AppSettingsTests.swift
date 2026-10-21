@@ -15,6 +15,7 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertEqual(settings.appearance, .dark)
         XCTAssertEqual(settings.skipInterval, 15)
         XCTAssertEqual(settings.lockScreenControls, .tracks)
+        XCTAssertEqual(settings.accent, .fuchsia, "По умолчанию — акцент версии 1.0")
     }
 
     func testValuesPersist() throws {
@@ -23,11 +24,13 @@ final class AppSettingsTests: XCTestCase {
         settings.appearance = .light
         settings.skipInterval = 30
         settings.lockScreenControls = .skip
+        settings.accent = .neon
 
         let reloaded = AppSettings(defaults: defaults)
         XCTAssertEqual(reloaded.appearance, .light)
         XCTAssertEqual(reloaded.skipInterval, 30)
         XCTAssertEqual(reloaded.lockScreenControls, .skip)
+        XCTAssertEqual(reloaded.accent, .neon)
     }
 
     func testInvalidStoredIntervalFallsBack() throws {

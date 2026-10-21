@@ -48,6 +48,7 @@ final class PlaybackEngine {
     @ObservationIgnored private var publishedDuration: TimeInterval = 0
     @ObservationIgnored private var resumeAfterInterruption = false
     @ObservationIgnored private var didRestore = false
+    @ObservationIgnored private var restoreTask: Task<Void, Never>?
     @ObservationIgnored private var lastPersistedAt = Date.distantPast
     @ObservationIgnored private var persistSequence = 0
     @ObservationIgnored private var artworkTask: Task<Void, Never>?
@@ -57,6 +58,8 @@ final class PlaybackEngine {
     /// «Назад» в первые 3 секунды переключает трек, позже — перематывает в начало.
     static let restartThreshold: TimeInterval = 3
     private static let persistInterval: TimeInterval = 10
+    /// Варианты таймера сна, минуты.
+    static let sleepTimerOptions = [5, 15, 30, 45, 60, 90]
 
     init(library: LibraryStore, settings: AppSettings, locations: StorageLocations) {
         self.library = library
@@ -78,7 +81,15 @@ final class PlaybackEngine {
     // MARK: - Restore
 
     /// Восстановить очередь и позицию с прошлого запуска. Звук не включается.
+    /// Повторные вызовы ждут первый.
     func restore() async {
+        if restoreTask == nil {
+            restoreTask = Task { await self.performRestore() }
+        }
+        await restoreTask?.value
+    }
+
+    private func performRestore() async {
         guard !didRestore else { return }
         await library.ensureLoaded()
         defer { didRestore = true }
@@ -541,7 +552,7 @@ final class PlaybackEngine {
         }
     }
 
-    /// Плеер сам перешёл к другому элементу (обычно — к предзагруженному следующему).
+    /// AVQueuePlayer сам перешёл к другому элементу (обычно — к предзагруженному следующему).
     private func syncCurrentItem() {
         let newID = player.currentItem.map(ObjectIdentifier.init)
         guard newID != currentItemID else { return }
@@ -735,8 +746,9 @@ final class PlaybackEngine {
     // MARK: - Persistence
 
     private func persist(force: Bool = false) {
-        // До восстановления не перезаписываем сохранённое пустым состоянием.
-        guard didRestore else { return }
+        // До восстановления не перезаписываем сохранённое пустым состоянием,
+        // а при недоступной библиотеке — очередью из «незнакомых» треков.
+        guard didRestore, !library.isReadOnly else { return }
         let now = Date.now
         guard force || now.timeIntervalSince(lastPersistedAt) >= Self.persistInterval else { return }
         lastPersistedAt = now

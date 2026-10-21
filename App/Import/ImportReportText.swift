@@ -2,7 +2,7 @@ import Foundation
 
 /// Текст алерта по итогам импорта.
 enum ImportReportText {
-    private static let maxListedFailures = 5
+    private static let maxListedFailures = ImportReport.maxListedFailures
 
     static func title(_ report: ImportReport) -> String {
         let added = report.importedPaths.count
@@ -23,6 +23,9 @@ enum ImportReportText {
         let hidden = report.failures.count - maxListedFailures
         if hidden > 0 {
             lines.append(String(localized: "…и ещё \(hidden)"))
+        }
+        if report.setAsideCount > 0 {
+            lines.append(String(localized: "Эти файлы не удалены: они лежат в «Файлы» → «На iPhone» → «Player» → «Не импортировано»."))
         }
         return lines.joined(separator: "\n")
     }

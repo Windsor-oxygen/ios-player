@@ -23,17 +23,20 @@ private struct TrackRowActions: ViewModifier {
     @Binding var pendingDeletion: Track?
     @Binding var playlistTarget: TrackSelection?
     @Environment(PlaybackEngine.self) private var engine
+    @State private var queueAdds = 0
 
     func body(content: Content) -> some View {
         content
             .contextMenu {
                 if track.isAvailable {
                     Button {
+                        queueAdds += 1
                         engine.playNext([track.id])
                     } label: {
                         Label("Играть следующим", systemImage: "text.line.first.and.arrowtriangle.forward")
                     }
                     Button {
+                        queueAdds += 1
                         engine.addToQueue([track.id])
                     } label: {
                         Label("В конец очереди", systemImage: "text.append")
@@ -55,6 +58,7 @@ private struct TrackRowActions: ViewModifier {
             .swipeActions(edge: .leading, allowsFullSwipe: true) {
                 if track.isAvailable {
                     Button {
+                        queueAdds += 1
                         engine.playNext([track.id])
                     } label: {
                         Label("Следующим", systemImage: "text.line.first.and.arrowtriangle.forward")
@@ -62,6 +66,7 @@ private struct TrackRowActions: ViewModifier {
                     .tint(.accentColor)
                 }
             }
+            .sensoryFeedback(.success, trigger: queueAdds)
             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                 // Без role: .destructive — иначе строка исчезает до подтверждения.
                 Button {
@@ -69,7 +74,7 @@ private struct TrackRowActions: ViewModifier {
                 } label: {
                     Label("Удалить", systemImage: "trash")
                 }
-                .tint(.red)
+                .tint(DS.Palette.destructive)
             }
     }
 }

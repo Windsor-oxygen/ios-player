@@ -1,0 +1,22 @@
+{
+  "images" : [
+    {
+      "filename" : "IconPreview-AppIcon-Neon.png",
+      "idiom" : "universal"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "IconPreview-AppIcon-Neon-Dark.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

@@ -37,6 +37,11 @@ struct ImportReport: Equatable, Sendable {
 
     var importedPaths: [String] = []
     var failures: [Failure] = []
+    /// Сколько файлов отложено в «Не импортировано» (а не удалено).
+    var setAsideCount = 0
+
+    /// Сколько ошибок перечислять в сообщении поимённо.
+    static let maxListedFailures = 5
 }
 
 /// Копирование файлов в Documents/Music. Все методы синхронные или
@@ -85,15 +90,23 @@ struct FileImporter: Sendable {
             if accessing { source.stopAccessingSecurityScopedResource() }
         }
 
-        let destination = try copyIntoMusic(source, preferredName: source.lastPathComponent, move: isInInbox(source))
+        let fromInbox = isInInbox(source)
+        let destination = try copyIntoMusic(source, preferredName: source.lastPathComponent, move: fromInbox)
         guard await isPlayable(destination) else {
-            try? FileManager.default.removeItem(at: destination)
+            if fromInbox {
+                // Файл перенесён из Inbox — это единственная копия, её не удаляем.
+                setAside(destination)
+            } else {
+                // Это наша копия; оригинал остался там, откуда его выбрали.
+                try? FileManager.default.removeItem(at: destination)
+            }
             throw ImportError.unreadable
         }
         return try relativePathOrThrow(destination)
     }
 
     /// Переносит загруженный файл из временной папки в Music.
+    /// Невоспроизводимую загрузку удаляем: это не файл пользователя, а наш временный.
     func importDownloaded(_ staged: URL, fileName: String) async throws -> String {
         let destination = try copyIntoMusic(staged, preferredName: fileName, move: true)
         guard await isPlayable(destination) else {
@@ -109,26 +122,44 @@ struct FileImporter: Sendable {
         guard let files = try? fm.contentsOfDirectory(
             at: locations.inbox, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles]
         ) else { return ImportReport() }
-        let report = await importFiles(files)
-        // Импортированное уже перенесено; неподдерживаемое удаляем, иначе оно будет висеть в Inbox вечно.
-        for file in files {
-            try? fm.removeItem(at: file)
+        let setAsideBefore = setAsideFileCount()
+        var report = await importFiles(files)
+        // Импортированное уже перенесено в Music. Остальное не удаляем, а откладываем.
+        for file in files where fm.fileExists(atPath: file.path(percentEncoded: false)) {
+            setAside(file)
         }
+        report.setAsideCount = max(setAsideFileCount() - setAsideBefore, 0)
         return report
+    }
+
+    private func setAsideFileCount() -> Int {
+        let path = locations.notImported.path(percentEncoded: false)
+        return (try? FileManager.default.contentsOfDirectory(atPath: path))?.count ?? 0
+    }
+
+    /// Переносит файл в «Не импортировано». Если не вышло — оставляет на месте.
+    private func setAside(_ file: URL) {
+        let fm = FileManager.default
+        do {
+            try fm.createDirectory(at: locations.notImported, withIntermediateDirectories: true)
+            try fm.moveItem(at: file, to: uniqueDestination(for: file.lastPathComponent, in: locations.notImported))
+        } catch {
+            Log.importing.error("Не удалось отложить \(file.lastPathComponent, privacy: .public): \(error.localizedDescription, privacy: .public)")
+        }
     }
 
     // MARK: - Helpers
 
-    func uniqueDestination(for fileName: String) -> URL {
+    func uniqueDestination(for fileName: String, in directory: URL) -> URL {
         let fm = FileManager.default
         let sanitized = Self.sanitize(fileName)
         let base = (sanitized as NSString).deletingPathExtension
         let ext = (sanitized as NSString).pathExtension
-        var candidate = locations.music.appending(path: sanitized)
+        var candidate = directory.appending(path: sanitized)
         var counter = 2
         while fm.fileExists(atPath: candidate.path(percentEncoded: false)) {
             let name = ext.isEmpty ? "\(base) (\(counter))" : "\(base) (\(counter)).\(ext)"
-            candidate = locations.music.appending(path: name)
+            candidate = directory.appending(path: name)
             counter += 1
         }
         return candidate
@@ -153,7 +184,7 @@ struct FileImporter: Sendable {
         if let available = locations.availableCapacity(), available < size + Self.spaceMargin {
             throw ImportError.insufficientSpace
         }
-        let destination = uniqueDestination(for: preferredName)
+        let destination = uniqueDestination(for: preferredName, in: locations.music)
         do {
             if move {
                 try fm.moveItem(at: source, to: destination)

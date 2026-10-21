@@ -4,18 +4,34 @@ struct SettingsView: View {
     @Environment(AppSettings.self) private var settings
     @Environment(LibraryStore.self) private var library
     @Environment(PlaybackEngine.self) private var engine
+    @Environment(AppPresenter.self) private var presenter
+    @Environment(AppIconController.self) private var icons
     @Environment(\.dismiss) private var dismiss
     @State private var confirmsCleanup = false
 
     var body: some View {
         @Bindable var settings = settings
+        @Bindable var presenter = presenter
 
-        NavigationStack {
+        NavigationStack(path: $presenter.settingsPath) {
             Form {
                 Section("Оформление") {
                     Picker("Тема", selection: $settings.appearance) {
                         ForEach(AppearanceMode.allCases) { mode in
                             Text(mode.label).tag(mode)
+                        }
+                    }
+                    VStack(alignment: .leading, spacing: DS.Spacing.m) {
+                        LabeledContent("Акцентный цвет", value: settings.accent.title)
+                        AccentPicker(selection: $settings.accent)
+                    }
+                    .padding(.vertical, DS.Spacing.xs)
+                    NavigationLink(value: SettingsRoute.appIcon) {
+                        LabeledContent("Иконка приложения") {
+                            HStack(spacing: DS.Spacing.s) {
+                                Text(icons.current.title)
+                                AppIconPreview(option: icons.current, side: DS.Size.iconPreviewInline)
+                            }
                         }
                     }
                 }
@@ -49,7 +65,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Библиотека")
                 } footer: {
-                    Text("Песен: \(library.tracks.count). Файлы лежат в «Файлы» → «На iPhone» → «Плеер».")
+                    Text("Песен: \(library.tracks.count). Файлы лежат в «Файлы» → «На iPhone» → «Player».")
                 }
 
                 Section("О приложении") {
@@ -57,6 +73,12 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Настройки")
+            .navigationDestination(for: SettingsRoute.self) { route in
+                switch route {
+                case .appIcon: AppIconPickerView()
+                }
+            }
+            .onAppear { icons.refresh() }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -71,7 +93,7 @@ struct SettingsView: View {
                 titleVisibility: .visible
             ) {
                 Button("Убрать", role: .destructive) {
-                    Task { await library.delete(Set(missingIDs)) }
+                    library.forget(Set(missingIDs))
                 }
                 Button("Отмена", role: .cancel) {}
             }

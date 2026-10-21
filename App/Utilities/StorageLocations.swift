@@ -2,7 +2,7 @@ import Foundation
 
 /// Корневые папки приложения. В тестах подменяется временной директорией.
 struct StorageLocations: Sendable {
-    /// Documents — видна в «Файлы → На iPhone → Плеер».
+    /// Documents — видна в «Файлы → На iPhone → Player».
     let documents: URL
     /// Application Support — служебные данные, в «Файлах» не видна.
     let applicationSupport: URL
@@ -19,6 +19,9 @@ struct StorageLocations: Sendable {
     var music: URL { documents.appending(path: "Music", directoryHint: .isDirectory) }
     /// Сюда iOS кладёт файлы из «Открыть в…», если не может открыть их на месте.
     var inbox: URL { documents.appending(path: "Inbox", directoryHint: .isDirectory) }
+    /// Файлы из «Открыть в…», которые не удалось импортировать. Их не удаляем,
+    /// а откладываем сюда — пользователь видит папку в «Файлах» и решает сам.
+    var notImported: URL { documents.appending(path: "Не импортировано", directoryHint: .isDirectory) }
     var libraryIndex: URL { applicationSupport.appending(path: "Library.json") }
     var playbackState: URL { applicationSupport.appending(path: "Playback.json") }
     var artwork: URL { caches.appending(path: "Artwork", directoryHint: .isDirectory) }

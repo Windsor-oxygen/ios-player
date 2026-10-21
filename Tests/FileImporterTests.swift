@@ -74,6 +74,8 @@ final class FileImporterTests: XCTestCase {
             XCTAssertEqual(error, .unreadable)
         }
         XCTAssertTrue(FolderScanner.scan(locations).isEmpty)
+        // Оригинал пользователя на месте.
+        XCTAssertTrue(FileManager.default.fileExists(atPath: source.path(percentEncoded: false)))
     }
 
     func testBatchReportCollectsSuccessesAndFailures() async throws {
@@ -92,16 +94,27 @@ final class FileImporterTests: XCTestCase {
         XCTAssertEqual(FolderScanner.scan(locations).count, 1)
     }
 
-    func testDrainInboxMovesFilesAndEmptiesInbox() async throws {
+    func testDrainInboxMovesFilesAndSetsAsideTheRest() async throws {
         let locations = try XCTUnwrap(locations)
         try TestSupport.write(TestSupport.wavData(), to: locations.inbox.appending(path: "Shared.wav"))
-        try TestSupport.write(Data(), to: locations.inbox.appending(path: "Junk.ogg"))
+        try TestSupport.write(Data("OggS".utf8), to: locations.inbox.appending(path: "Junk.ogg"))
+        try TestSupport.write(Data("broken".utf8), to: locations.inbox.appending(path: "Broken.m4a"))
 
         let report = await FileImporter(locations: locations).drainInbox()
 
         XCTAssertEqual(report.importedPaths, ["Music/Shared.wav"])
-        let leftovers = try FileManager.default.contentsOfDirectory(atPath: locations.inbox.path(percentEncoded: false))
+        XCTAssertEqual(report.failures.count, 2)
+        XCTAssertEqual(report.setAsideCount, 2)
+        let fm = FileManager.default
+        let leftovers = try fm.contentsOfDirectory(atPath: locations.inbox.path(percentEncoded: false))
         XCTAssertTrue(leftovers.isEmpty)
+        // Ничего не удалено: неподходящие файлы отложены целиком, с тем же содержимым.
+        let setAside = try fm.contentsOfDirectory(atPath: locations.notImported.path(percentEncoded: false))
+        XCTAssertEqual(Set(setAside), ["Junk.ogg", "Broken.m4a"])
+        let junk = try Data(contentsOf: locations.notImported.appending(path: "Junk.ogg"))
+        XCTAssertEqual(junk, Data("OggS".utf8))
+        // Отложенное не попадает в библиотеку.
+        XCTAssertEqual(FolderScanner.scan(locations).map(\.relativePath), ["Music/Shared.wav"])
     }
 
     func testSanitizeFileName() {

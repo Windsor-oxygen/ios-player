@@ -38,6 +38,10 @@ enum SongSort: String, CaseIterable, Identifiable, Sendable {
 enum LibraryQuery {
     static var unknownArtist: String { String(localized: "Неизвестный исполнитель") }
     static var unknownAlbum: String { String(localized: "Неизвестный альбом") }
+    /// Сколько первых песен плейлиста просматривать в поисках обложки.
+    static let playlistCoverLookahead = 20
+    /// Пауза после ввода в поиске, прежде чем пересчитывать список.
+    static let searchDebounce = Duration.milliseconds(200)
 
     /// Отсортированные и отфильтрованные песни. `nonisolated async` — выполняется вне main thread.
     static func songs(_ tracks: [Track], sort: SongSort, query: String) async -> [Track] {

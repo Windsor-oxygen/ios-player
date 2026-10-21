@@ -188,6 +188,40 @@
         }
       }
     },
+    "Аврора": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aurora"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Аврора"
+          }
+        }
+      }
+    },
+    "Акцентный цвет": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accent Color"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Акцентный цвет"
+          }
+        }
+      }
+    },
     "Альбом или исполнитель": {
       "extractionState": "manual",
       "localizations": {
@@ -256,7 +290,24 @@
         }
       }
     },
-    "В другом приложении: «Поделиться» → «Плеер»": {
+    "Бумага": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paper"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Бумага"
+          }
+        }
+      }
+    },
+    "В другом приложении: «Поделиться» → «Player»": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -268,7 +319,7 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "В другом приложении: «Поделиться» → «Плеер»"
+            "value": "В другом приложении: «Поделиться» → «Player»"
           }
         }
       }
@@ -409,6 +460,23 @@
         }
       }
     },
+    "Восстановленный плейлист": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recovered Playlist"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Восстановленный плейлист"
+          }
+        }
+      }
+    },
     "Вперёд на %lld секунд": {
       "extractionState": "manual",
       "localizations": {
@@ -524,6 +592,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Готово"
+          }
+        }
+      }
+    },
+    "Графит": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Graphite"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Графит"
           }
         }
       }
@@ -715,6 +800,23 @@
         }
       }
     },
+    "Добавьте песни из библиотеки.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add songs from your library."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавьте песни из библиотеки."
+          }
+        }
+      }
+    },
     "Добавьте песни одним из способов:": {
       "extractionState": "manual",
       "localizations": {
@@ -800,6 +902,23 @@
         }
       }
     },
+    "Закат": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sunset"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Закат"
+          }
+        }
+      }
+    },
     "Закрыть": {
       "extractionState": "manual",
       "localizations": {
@@ -868,6 +987,40 @@
         }
       }
     },
+    "Иконка не изменена": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Icon Not Changed"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Иконка не изменена"
+          }
+        }
+      }
+    },
+    "Иконка приложения": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Icon"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Иконка приложения"
+          }
+        }
+      }
+    },
     "Исполнители": {
       "extractionState": "manual",
       "localizations": {
@@ -932,6 +1085,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "Как в системе"
+          }
+        }
+      }
+    },
+    "Лазурь": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Azure"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Лазурь"
+          }
+        }
+      }
+    },
+    "Мята": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mint"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Мята"
+          }
+        }
+      }
+    },
+    "На паузе": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paused"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На паузе"
           }
         }
       }
@@ -1038,6 +1242,23 @@
         }
       }
     },
+    "Не удалось прочитать файл библиотеки. Чтобы ничего не потерять, изменения в этот раз не сохраняются. Перезапустите приложение.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The library file couldn’t be read. To avoid losing anything, changes won’t be saved this time. Restart the app."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось прочитать файл библиотеки. Чтобы ничего не потерять, изменения в этот раз не сохраняются. Перезапустите приложение."
+          }
+        }
+      }
+    },
     "Не удалось скопировать файл: %@": {
       "extractionState": "manual",
       "localizations": {
@@ -1051,6 +1272,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Не удалось скопировать файл: %@"
+          }
+        }
+      }
+    },
+    "Не удалось сменить иконку. Попробуйте ещё раз. (%@)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t change the icon. Please try again. (%@)"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось сменить иконку. Попробуйте ещё раз. (%@)"
           }
         }
       }
@@ -1119,6 +1357,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Неизвестный исполнитель"
+          }
+        }
+      }
+    },
+    "Неон": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neon"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Неон"
           }
         }
       }
@@ -1272,6 +1527,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Обновление библиотеки…"
+          }
+        }
+      }
+    },
+    "Океан": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ocean"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Океан"
           }
         }
       }
@@ -1565,7 +1837,7 @@
         }
       }
     },
-    "Песен: %lld. Файлы лежат в «Файлы» → «На iPhone» → «Плеер».": {
+    "Песен: %lld. Файлы лежат в «Файлы» → «На iPhone» → «Player».": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -1577,7 +1849,7 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Песен: %lld. Файлы лежат в «Файлы» → «На iPhone» → «Плеер»."
+            "value": "Песен: %lld. Файлы лежат в «Файлы» → «На iPhone» → «Player»."
           }
         }
       }
@@ -1871,7 +2143,7 @@
         }
       }
     },
-    "Положите файлы в «Файлы» → «На iPhone» → «Плеер»": {
+    "Положите файлы в «Файлы» → «На iPhone» → «Player»": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -1883,7 +2155,24 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Положите файлы в «Файлы» → «На iPhone» → «Плеер»"
+            "value": "Положите файлы в «Файлы» → «На iPhone» → «Player»"
+          }
+        }
+      }
+    },
+    "После выбора iOS покажет системное уведомление о смене значка — это нормально. Музыка и настройки не меняются.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "After you choose, iOS shows a system alert about the icon change — that’s expected. Your music and settings stay the same."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "После выбора iOS покажет системное уведомление о смене значка — это нормально. Музыка и настройки не меняются."
           }
         }
       }
@@ -2483,19 +2772,36 @@
         }
       }
     },
-    "Файл библиотеки был повреждён и создан заново. Музыкальные файлы не пострадали — они будут найдены повторно, но плейлисты потеряны.": {
+    "Файл библиотеки был повреждён. Его копия сохранена, библиотека восстановлена, плейлистов спасено: %lld. Музыкальные файлы не пострадали.": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The library file was damaged and has been recreated. Your music files are safe and will be found again, but playlists were lost."
+            "value": "The library file was damaged. A copy of it was saved and the library was restored; playlists recovered: %lld. Your music files are safe."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Файл библиотеки был повреждён и создан заново. Музыкальные файлы не пострадали — они будут найдены повторно, но плейлисты потеряны."
+            "value": "Файл библиотеки был повреждён. Его копия сохранена, библиотека восстановлена, плейлистов спасено: %lld. Музыкальные файлы не пострадали."
+          }
+        }
+      }
+    },
+    "Файл библиотеки повреждён, а сделать его копию не удалось. Чтобы ничего не потерять, изменения в этот раз не сохраняются. Освободите место на iPhone и перезапустите приложение.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The library file is damaged and a backup copy couldn’t be made. To avoid losing anything, changes won’t be saved this time. Free up space on your iPhone and restart the app."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Файл библиотеки повреждён, а сделать его копию не удалось. Чтобы ничего не потерять, изменения в этот раз не сохраняются. Освободите место на iPhone и перезапустите приложение."
           }
         }
       }
@@ -2568,6 +2874,23 @@
         }
       }
     },
+    "Фиалка": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Violet"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Фиалка"
+          }
+        }
+      }
+    },
     "Формат %@ не поддерживается iOS. Подходят MP3, M4A/AAC, ALAC, WAV, AIFF и FLAC.": {
       "extractionState": "manual",
       "localizations": {
@@ -2619,6 +2942,23 @@
         }
       }
     },
+    "Фуксия": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fuchsia"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Фуксия"
+          }
+        }
+      }
+    },
     "Экран блокировки": {
       "extractionState": "manual",
       "localizations": {
@@ -2636,6 +2976,40 @@
         }
       }
     },
+    "Эта версия iOS не позволяет менять иконку приложения.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This version of iOS doesn’t allow changing the app icon."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Эта версия iOS не позволяет менять иконку приложения."
+          }
+        }
+      }
+    },
+    "Эти файлы не удалены: они лежат в «Файлы» → «На iPhone» → «Player» → «Не импортировано».": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These files were not deleted: they are in “Files” → “On My iPhone” → “Player” → “Не импортировано”."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Эти файлы не удалены: они лежат в «Файлы» → «На iPhone» → «Player» → «Не импортировано»."
+          }
+        }
+      }
+    },
     "Это не похоже на ссылку. Адрес должен начинаться с https://": {
       "extractionState": "manual",
       "localizations": {
@@ -2649,6 +3023,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Это не похоже на ссылку. Адрес должен начинаться с https://"
+          }
+        }
+      }
+    },
+    "Янтарь": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Amber"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Янтарь"
           }
         }
       }

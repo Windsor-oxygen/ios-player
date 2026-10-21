@@ -15,6 +15,9 @@ final class LibraryStore {
     private(set) var revision = 0
     private(set) var isLoaded = false
     private(set) var isRefreshing = false
+    /// Индекс не удалось прочитать или сохранить в копию: в этой сессии ничего
+    /// не записываем (ни библиотеку, ни состояние воспроизведения), чтобы не затереть данные.
+    @ObservationIgnored private(set) var isReadOnly = false
     /// Итог последнего импорта для алерта; UI обнуляет после показа.
     var lastReport: ImportReport?
     /// Разовое сообщение (например, о восстановлении повреждённого индекса).
@@ -85,8 +88,18 @@ final class LibraryStore {
             setTracks(index.tracks)
         case .empty:
             break
-        case .recoveredFromCorruption:
-            notice = String(localized: "Файл библиотеки был повреждён и создан заново. Музыкальные файлы не пострадали — они будут найдены повторно, но плейлисты потеряны.")
+        case .recovered(let index, let backupCreated):
+            playlists = index.playlists
+            setTracks(index.tracks)
+            isReadOnly = !backupCreated
+            if backupCreated {
+                notice = String(localized: "Файл библиотеки был повреждён. Его копия сохранена, библиотека восстановлена, плейлистов спасено: \(index.playlists.count). Музыкальные файлы не пострадали.")
+            } else {
+                notice = String(localized: "Файл библиотеки повреждён, а сделать его копию не удалось. Чтобы ничего не потерять, изменения в этот раз не сохраняются. Освободите место на iPhone и перезапустите приложение.")
+            }
+        case .unreadable:
+            isReadOnly = true
+            notice = String(localized: "Не удалось прочитать файл библиотеки. Чтобы ничего не потерять, изменения в этот раз не сохраняются. Перезапустите приложение.")
         }
         isLoaded = true
     }
@@ -233,6 +246,7 @@ final class LibraryStore {
         if var existing = lastReport {
             existing.importedPaths += report.importedPaths
             existing.failures += report.failures
+            existing.setAsideCount += report.setAsideCount
             lastReport = existing
         } else {
             lastReport = report
@@ -242,18 +256,26 @@ final class LibraryStore {
     // MARK: - Deletion
 
     /// Удаляет файлы с диска и записи из библиотеки и плейлистов.
+    /// Только по явной команде пользователя с подтверждением.
     func delete(_ ids: Set<UUID>) async {
         guard !ids.isEmpty else { return }
         let urls = tracks.filter { ids.contains($0.id) }.map { locations.fileURL(forRelativePath: $0.relativePath) }
         await Self.removeFiles(urls)
+        forget(ids)
+        let keys = Set(tracks.compactMap(\.artworkKey))
+        let artwork = self.artwork
+        Task.detached(priority: .utility) { artwork.removeUnreferenced(keeping: keys) }
+    }
+
+    /// Убирает записи из библиотеки и плейлистов, не трогая диск
+    /// (для песен, файлов которых уже нет).
+    func forget(_ ids: Set<UUID>) {
+        guard !ids.isEmpty else { return }
         setTracks(tracks.filter { !ids.contains($0.id) })
         for index in playlists.indices {
             playlists[index].trackIDs.removeAll { ids.contains($0) }
         }
         scheduleSave()
-        let keys = Set(tracks.compactMap(\.artworkKey))
-        let artwork = self.artwork
-        Task.detached(priority: .utility) { artwork.removeUnreferenced(keeping: keys) }
     }
 
     private nonisolated static func removeFiles(_ urls: [URL]) async {

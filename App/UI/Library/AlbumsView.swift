@@ -4,8 +4,6 @@ struct AlbumsView: View {
     @Environment(LibraryStore.self) private var library
     @State private var query = ""
 
-    private let columns = [GridItem(.flexible(), spacing: 16), GridItem(.flexible(), spacing: 16)]
-
     var body: some View {
         NavigationStack {
             Group {
@@ -15,15 +13,18 @@ struct AlbumsView: View {
                     ContentUnavailableView.search(text: query)
                 } else {
                     ScrollView {
-                        LazyVGrid(columns: columns, spacing: 24) {
+                        LazyVGrid(
+                            columns: [GridItem(.adaptive(minimum: DS.Size.albumCard), spacing: DS.Spacing.l)],
+                            spacing: DS.Spacing.xl
+                        ) {
                             ForEach(filtered) { album in
                                 NavigationLink(value: AlbumRoute(id: album.id)) {
                                     AlbumCell(album: album)
                                 }
-                                .buttonStyle(.plain)
+                                .buttonStyle(PressScaleButtonStyle())
                             }
                         }
-                        .padding(16)
+                        .padding(DS.Spacing.l)
                     }
                 }
             }
@@ -49,17 +50,18 @@ struct AlbumCell: View {
     let album: Album
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            ArtworkView(key: album.artworkKey, size: .medium, cornerRadius: 12)
-                .shadow(color: .black.opacity(0.25), radius: 8, y: 4)
-            VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: DS.Spacing.s) {
+            ArtworkView(key: album.artworkKey, seed: album.title, size: .medium, cornerRadius: DS.Radius.l)
+                .dsShadow(DS.Shadow.card)
+            VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
                 Text(album.title)
-                    .font(.subheadline.weight(.semibold))
-                    .lineLimit(1)
+                    .font(DS.Font.miniTitle)
+                    .foregroundStyle(.primary)
+                    .lineLimit(DS.LineLimit.rowTitle)
                 Text(album.artist)
-                    .font(.footnote)
+                    .font(DS.Font.footnote)
                     .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                    .lineLimit(DS.LineLimit.rowTitle)
             }
         }
         .accessibilityElement(children: .ignore)
@@ -104,7 +106,7 @@ struct AlbumDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .trackActionsHost(pendingDeletion: $pendingDeletion, playlistTarget: $playlistTarget)
         } else {
-            ContentUnavailableView("Альбом не найден", systemImage: "square.stack")
+            EmptyStateView(symbol: "square.stack", title: "Альбом не найден")
         }
     }
 }
@@ -113,28 +115,32 @@ private struct AlbumHeader: View {
     let album: Album
     let tracks: [Track]
 
+    @ScaledMetric(relativeTo: .title) private var artworkSide = DS.Size.albumHeaderArtwork
+
     var body: some View {
-        VStack(spacing: 16) {
-            ArtworkView(key: album.artworkKey, size: .large, cornerRadius: 16)
-                .frame(width: 240, height: 240)
-                .shadow(color: .black.opacity(0.35), radius: 16, y: 8)
-            VStack(spacing: 4) {
+        VStack(spacing: DS.Spacing.l) {
+            ArtworkView(key: album.artworkKey, seed: album.title, size: .large, cornerRadius: DS.Radius.xl)
+                .frame(maxWidth: artworkSide)
+                .dsShadow(DS.Shadow.header)
+                .padding(.horizontal, DS.Spacing.xxl)
+            VStack(spacing: DS.Spacing.xs) {
                 Text(album.title)
-                    .font(.title2.bold())
+                    .font(DS.Font.title)
                     .multilineTextAlignment(.center)
-                    .lineLimit(3)
+                    .lineLimit(DS.LineLimit.headerTitle)
                 Text(album.artist)
-                    .font(.title3)
+                    .font(DS.Font.subtitle)
                     .foregroundStyle(.tint)
-                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(DS.LineLimit.nowPlayingTitle)
                 Text(summary)
-                    .font(.footnote)
+                    .font(DS.Font.footnote)
                     .foregroundStyle(.secondary)
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, DS.Spacing.l)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 24)
+        .padding(.vertical, DS.Spacing.xl)
         .accessibilityElement(children: .combine)
     }
 

@@ -16,7 +16,7 @@ struct RootView: View {
             Tab("Исполнители", systemImage: "music.mic") { ArtistsView().miniPlayerInset(namespace: playerNamespace) }
             Tab("Плейлисты", systemImage: "music.note.list") { PlaylistsView().miniPlayerInset(namespace: playerNamespace) }
         }
-        .animation(reduceMotion ? nil : .spring(response: 0.4, dampingFraction: 0.85), value: engine.currentTrack == nil)
+        .animation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion), value: engine.currentTrack == nil)
         .overlay(alignment: .top) {
             if !presenter.showsNowPlaying { MessageBanner(message: engine.message) }
         }
@@ -32,7 +32,7 @@ struct RootView: View {
             NowPlayingView()
                 .nowPlayingTransition(namespace: playerNamespace, reduceMotion: reduceMotion)
         }
-        .sheet(isPresented: $presenter.showsSettings) {
+        .sheet(isPresented: $presenter.showsSettings, onDismiss: { presenter.settingsPath = [] }) {
             SettingsView()
         }
         .fileImporter(

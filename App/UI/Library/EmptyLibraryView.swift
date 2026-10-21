@@ -1,39 +1,30 @@
 import SwiftUI
 
-/// Пустая библиотека: как добавить музыку.
+/// Пустая библиотека: иллюстрация и подсказки, как добавить музыку.
 struct EmptyLibraryView: View {
     @Environment(AppPresenter.self) private var presenter
     @Environment(LibraryStore.self) private var library
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
-                Image(systemName: "waveform")
-                    .font(.system(size: 56, weight: .semibold))
-                    .foregroundStyle(.tint)
-                    .accessibilityHidden(true)
-                    .padding(.top, 32)
-
-                VStack(spacing: 8) {
-                    Text("Здесь пока нет музыки")
-                        .font(.title2.bold())
-                    Text("Добавьте песни одним из способов:")
-                        .foregroundStyle(.secondary)
-                }
-                .multilineTextAlignment(.center)
-
-                VStack(alignment: .leading, spacing: 16) {
+            EmptyStateView(
+                symbol: "waveform",
+                title: "Здесь пока нет музыки",
+                message: "Добавьте песни одним из способов:"
+            ) {
+                VStack(alignment: .leading, spacing: DS.Spacing.l) {
                     Label("«+» → «Из Файлов» — скопировать песни с iPhone или iCloud Drive", systemImage: "folder")
-                    Label("В другом приложении: «Поделиться» → «Плеер»", systemImage: "square.and.arrow.up")
-                    Label("Положите файлы в «Файлы» → «На iPhone» → «Плеер»", systemImage: "iphone")
+                    Label("В другом приложении: «Поделиться» → «Player»", systemImage: "square.and.arrow.up")
+                    Label("Положите файлы в «Файлы» → «На iPhone» → «Player»", systemImage: "iphone")
                     Label("«+» → «По ссылке» — прямая ссылка https:// на файл", systemImage: "link")
                 }
-                .font(.callout)
+                .font(DS.Font.callout)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(16)
-                .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .padding(DS.Spacing.l)
+                .background(.quaternary.opacity(DS.Opacity.tertiary),
+                            in: RoundedRectangle(cornerRadius: DS.Radius.xl, style: .continuous))
 
-                VStack(spacing: 8) {
+                VStack(spacing: DS.Spacing.s) {
                     Button {
                         presenter.showsFilePicker = true
                     } label: {
@@ -41,7 +32,6 @@ struct EmptyLibraryView: View {
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
 
                     Button {
                         presenter.showsDownloadSheet = true
@@ -50,20 +40,19 @@ struct EmptyLibraryView: View {
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.bordered)
-                    .controlSize(.large)
                 }
+                .controlSize(.large)
+                .font(DS.Font.bodyEmphasized)
 
                 if library.isRefreshing {
                     ProgressView("Обновление библиотеки…")
                 }
 
                 Text("Поддерживаются MP3, M4A/AAC, ALAC, WAV, AIFF и FLAC.")
-                    .font(.footnote)
+                    .font(DS.Font.footnote)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 32)
         }
     }
 }

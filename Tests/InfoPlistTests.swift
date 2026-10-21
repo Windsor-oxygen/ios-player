@@ -26,7 +26,19 @@ final class InfoPlistTests: XCTestCase {
         }
     }
 
-    func testDisplayName() {
-        XCTAssertEqual(info["CFBundleDisplayName"] as? String, "Плеер")
+    func testDisplayNameIsPlayerEverywhere() {
+        XCTAssertEqual(info["CFBundleDisplayName"] as? String, "Player")
+        XCTAssertEqual(info["CFBundleName"] as? String, "Player")
+        // Имя не переопределяется локализациями: под иконкой «Player» на любом языке.
+        for language in ["ru", "en"] {
+            let path = Bundle.main.path(forResource: "InfoPlist", ofType: "strings", inDirectory: nil, forLocalization: language)
+            XCTAssertNil(path, "Лишний InfoPlist.strings для \(language)")
+        }
+    }
+
+    func testVersion() {
+        XCTAssertEqual(info["CFBundleShortVersionString"] as? String, "1.1")
+        let build = Int(info["CFBundleVersion"] as? String ?? "") ?? 0
+        XCTAssertGreaterThan(build, 1, "Номер сборки должен расти: в 1.0 был 1")
     }
 }

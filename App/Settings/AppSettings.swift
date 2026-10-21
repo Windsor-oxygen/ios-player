@@ -53,12 +53,18 @@ final class AppSettings {
         didSet { defaults.set(lockScreenControls.rawValue, forKey: Keys.lockScreenControls) }
     }
 
+    /// Акцентный цвет интерфейса (новое в 1.1; по умолчанию — как в 1.0).
+    var accent: AccentTheme {
+        didSet { defaults.set(accent.rawValue, forKey: Keys.accent) }
+    }
+
     @ObservationIgnored private let defaults: UserDefaults
 
     private enum Keys {
         static let appearance = "settings.appearance"
         static let skipInterval = "settings.skipInterval"
         static let lockScreenControls = "settings.lockScreenControls"
+        static let accent = "settings.accent"
     }
 
     init(defaults: UserDefaults = .standard) {
@@ -68,5 +74,6 @@ final class AppSettings {
         skipInterval = Self.skipIntervals.contains(storedInterval) ? storedInterval : 15
         lockScreenControls = defaults.string(forKey: Keys.lockScreenControls)
             .flatMap(LockScreenControls.init(rawValue:)) ?? .tracks
+        accent = defaults.string(forKey: Keys.accent).flatMap(AccentTheme.init(rawValue:)) ?? .fuchsia
     }
 }

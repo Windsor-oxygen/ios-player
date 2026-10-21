@@ -5,6 +5,7 @@ import SwiftUI
 /// Для VoiceOver подменяется стандартным Slider.
 struct ScrubberView: View {
     @Environment(PlaybackEngine.self) private var engine
+    @Environment(AppSettings.self) private var settings
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var dragValue: TimeInterval?
 
@@ -14,17 +15,18 @@ struct ScrubberView: View {
         let shown = min(dragValue ?? clock.currentTime, duration)
         let isDragging = dragValue != nil
 
-        VStack(spacing: 8) {
+        VStack(spacing: DS.Spacing.s) {
             GeometryReader { proxy in
                 let width = max(proxy.size.width, 1)
                 ZStack(alignment: .leading) {
                     Capsule()
-                        .fill(.white.opacity(0.22))
+                        .fill(DS.Palette.onArtworkTrack)
                     Capsule()
-                        .fill(.white.opacity(isDragging ? 1 : 0.85))
+                        .fill(isDragging ? DS.Palette.onArtwork : DS.Palette.onArtwork.opacity(DS.Opacity.strong))
                         .frame(width: width * shown / duration)
+                        .accentGlow(settings.accent.glows && isDragging, color: settings.accent.color)
                 }
-                .frame(height: isDragging ? 10 : 6)
+                .frame(height: isDragging ? DS.Size.scrubberActive : DS.Size.scrubberIdle)
                 .frame(maxHeight: .infinity)
                 .contentShape(Rectangle())
                 .gesture(
@@ -38,8 +40,8 @@ struct ScrubberView: View {
                         }
                 )
             }
-            .frame(height: 24)
-            .animation(reduceMotion ? nil : .spring(response: 0.3, dampingFraction: 0.8), value: isDragging)
+            .frame(height: DS.Size.scrubberTouch)
+            .animation(DS.Motion.animation(DS.Motion.scrub, reduceMotion: reduceMotion), value: isDragging)
             .sensoryFeedback(.selection, trigger: isDragging)
 
             HStack {
@@ -47,14 +49,14 @@ struct ScrubberView: View {
                 Spacer()
                 Text("−\(TimeFormatter.string(from: max(duration - shown, 0)))")
             }
-            .font(.caption.monospacedDigit())
-            .foregroundStyle(.white.opacity(isDragging ? 0.95 : 0.65))
+            .font(DS.Font.time)
+            .foregroundStyle(isDragging ? DS.Palette.onArtwork : DS.Palette.onArtworkSecondary)
         }
         .accessibilityRepresentation {
             Slider(
                 value: Binding(get: { clock.currentTime }, set: { engine.seek(to: $0) }),
                 in: 0...duration,
-                step: 5
+                step: DS.Gesture.accessibilitySeekStep
             ) {
                 Text("Позиция воспроизведения")
             }
@@ -66,14 +68,20 @@ struct ScrubberView: View {
 /// Тонкая полоса прогресса для мини-плеера.
 struct MiniProgressBar: View {
     @Environment(PlaybackEngine.self) private var engine
+    @Environment(AppSettings.self) private var settings
 
     var body: some View {
         GeometryReader { proxy in
-            Capsule()
-                .fill(.tint)
-                .frame(width: proxy.size.width * engine.clock.progress)
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(.tint.opacity(DS.Opacity.soft))
+                Capsule()
+                    .fill(.tint)
+                    .frame(width: proxy.size.width * engine.clock.progress)
+                    .accentGlow(settings.accent.glows, color: settings.accent.color)
+            }
         }
-        .frame(height: 2)
+        .frame(height: DS.Size.miniProgress)
         .accessibilityHidden(true)
     }
 }

@@ -15,7 +15,7 @@ struct PlaylistsView: View {
                     isCreating = true
                 } label: {
                     Label("Новый плейлист", systemImage: "plus.circle.fill")
-                        .font(.body.weight(.semibold))
+                        .font(DS.Font.bodyEmphasized)
                 }
                 ForEach(library.playlists) { playlist in
                     NavigationLink(value: PlaylistRoute(id: playlist.id)) {
@@ -47,10 +47,10 @@ struct PlaylistsView: View {
             .listStyle(.plain)
             .overlay {
                 if library.playlists.isEmpty {
-                    ContentUnavailableView(
-                        "Нет плейлистов",
-                        systemImage: "music.note.list",
-                        description: Text("Создайте плейлист и добавьте в него песни через долгое нажатие на песню.")
+                    EmptyStateView(
+                        symbol: "music.note.list",
+                        title: "Нет плейлистов",
+                        message: "Создайте плейлист и добавьте в него песни через долгое нажатие на песню."
                     )
                     .allowsHitTesting(false)
                 }
@@ -93,24 +93,25 @@ private struct PlaylistRow: View {
     @Environment(LibraryStore.self) private var library
 
     var body: some View {
-        HStack(spacing: 12) {
-            ArtworkView(key: coverKey, cornerRadius: 8)
-                .frame(width: 56, height: 56)
-            VStack(alignment: .leading, spacing: 2) {
+        HStack(spacing: DS.Spacing.m) {
+            ArtworkView(key: coverKey, seed: playlist.name, cornerRadius: DS.Radius.m)
+                .frame(width: DS.Size.playlistArtwork, height: DS.Size.playlistArtwork)
+            VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
                 Text(playlist.name)
-                    .lineLimit(1)
+                    .font(DS.Font.body)
+                    .lineLimit(DS.LineLimit.rowTitle)
                 Text("Песен: \(playlist.trackIDs.count)")
-                    .font(.subheadline)
+                    .font(DS.Font.subheadline)
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, DS.Spacing.xs)
         .accessibilityElement(children: .combine)
     }
 
-    /// Обложка первой песни с обложкой (ограничиваемся первыми 20, чтобы не перебирать всё).
+    /// Обложка первой песни с обложкой (смотрим только начало плейлиста, чтобы не перебирать всё).
     private var coverKey: String? {
-        playlist.trackIDs.prefix(20).lazy.compactMap { library.tracksByID[$0]?.artworkKey }.first
+        playlist.trackIDs.prefix(LibraryQuery.playlistCoverLookahead).lazy.compactMap { library.tracksByID[$0]?.artworkKey }.first
     }
 }
 
@@ -140,7 +141,7 @@ struct PlaylistDetailView: View {
                             TrackRow(track: track)
                         }
                     } else {
-                        Text("Песня удалена")
+                        Label("Песня удалена", systemImage: "exclamationmark.triangle")
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -150,11 +151,14 @@ struct PlaylistDetailView: View {
             .listStyle(.plain)
             .overlay {
                 if playlist.trackIDs.isEmpty {
-                    ContentUnavailableView {
-                        Label("Плейлист пуст", systemImage: "music.note.list")
-                    } actions: {
+                    EmptyStateView(
+                        symbol: "music.note.list",
+                        title: "Плейлист пуст",
+                        message: "Добавьте песни из библиотеки."
+                    ) {
                         Button("Добавить песни") { isPicking = true }
                             .buttonStyle(.borderedProminent)
+                            .controlSize(.large)
                     }
                 }
             }
@@ -189,7 +193,7 @@ struct PlaylistDetailView: View {
                 Button("Отмена", role: .cancel) {}
             }
         } else {
-            ContentUnavailableView("Плейлист не найден", systemImage: "music.note.list")
+            EmptyStateView(symbol: "music.note.list", title: "Плейлист не найден")
         }
     }
 }

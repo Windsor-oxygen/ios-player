@@ -19,8 +19,8 @@ struct RoutePickerButton: UIViewRepresentable {
     func makeUIView(context: Context) -> AVRoutePickerView {
         let view = AVRoutePickerView(frame: .zero)
         view.prioritizesVideoDevices = false
-        view.tintColor = UIColor.white.withAlphaComponent(0.8)
-        view.activeTintColor = .white
+        view.tintColor = UIColor(DS.Palette.onArtworkSecondary)
+        view.activeTintColor = UIColor(DS.Palette.onArtwork)
         view.accessibilityLabel = String(localized: "Устройство вывода звука")
         return view
     }

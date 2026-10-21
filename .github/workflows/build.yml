@@ -25,7 +25,7 @@ jobs:
   build:
     name: Test, audit, build .ipa
     runs-on: macos-15
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
@@ -37,6 +37,10 @@ jobs:
         run: |
           python3 tools/build_strings.py
           git diff --exit-code -- App/Resources/Localizable.xcstrings
+
+      # Дизайн-система: во View нет «магических» чисел, только токены DS.*.
+      - name: Check design tokens
+        run: python3 tools/check_design_tokens.py
 
       - name: Select Xcode
         id: xcode
@@ -86,6 +90,21 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             -quiet
 
+      # Скриншоты основных экранов на демо-данных (только Debug-сборка).
+      - name: Screenshots
+        run: |
+          .github/scripts/screenshots.sh "${{ steps.sim.outputs.udid }}" \
+            "$DERIVED_DATA/Build/Products/Debug-iphonesimulator/$APP_NAME.app" Screenshots
+
+      - name: Upload screenshots
+        if: success() || failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: Screenshots
+          path: Screenshots
+          if-no-files-found: warn
+          retention-days: 30
+
       - name: Dead code (Periphery)
         run: |
           periphery scan \
@@ -116,6 +135,12 @@ jobs:
         run: |
           app="$DERIVED_DATA/Build/Products/Release-iphoneos/$APP_NAME.app"
           test -d "$app"
+          # Демо-режим существует только в Debug-сборке.
+          if grep -a -q "PlayerDemo" "$app/$APP_NAME"; then
+            echo "::error::В Release-сборке найден демо-режим (PlayerDemo)" >&2
+            exit 1
+          fi
+          .github/scripts/check_icons.sh "$app" App/Resources/Assets.xcassets
           plutil -p "$app/Info.plist" | grep -E 'CFBundleDisplayName|CFBundleIdentifier|UIBackgroundModes|MinimumOSVersion' -A2 || true
           rm -rf build && mkdir -p build/Payload
           cp -R "$app" build/Payload/
