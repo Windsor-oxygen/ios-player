@@ -72,12 +72,6 @@ final class AudioSessionController {
               let type = AVAudioSession.InterruptionType(rawValue: rawType) else { return nil }
         switch type {
         case .began:
-            // Приложение было приостановлено системой, а не прервано звонком —
-            // это не повод потом включать звук самостоятельно.
-            let rawReason = info[AVAudioSessionInterruptionReasonKey] as? UInt
-            if rawReason.flatMap(AVAudioSession.InterruptionReason.init(rawValue:)) == .appWasSuspended {
-                return nil
-            }
             return .began
         case .ended:
             let rawOptions = info[AVAudioSessionInterruptionOptionKey] as? UInt ?? 0
