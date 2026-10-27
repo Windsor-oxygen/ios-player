@@ -41,7 +41,7 @@ private struct ArtistRow: View {
 
     var body: some View {
         HStack(spacing: DS.Spacing.m) {
-            ArtworkView(key: artist.artworkKey, seed: artist.name, cornerRadius: DS.Size.rowArtwork * DS.Radius.circleRatio)
+            ArtworkView(key: artist.artworkKey, seed: artist.id, cornerRadius: DS.Size.rowArtwork * DS.Radius.circleRatio)
                 .frame(width: DS.Size.rowArtwork, height: DS.Size.rowArtwork)
             VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
                 Text(artist.name)

@@ -44,6 +44,8 @@ struct DynamicBackground: View {
         let palette: [RGBColor]
         let image: UIImage?
         if let key = artworkKey {
+            // Палитра и размытие строятся из миниатюр — если их нет, сначала пересоздаём.
+            _ = await library.artworkImage(key: key, size: .medium)
             let store = library.artwork
             async let extracted = store.palette(key: key)
             async let blurred = store.backdrop(key: key)

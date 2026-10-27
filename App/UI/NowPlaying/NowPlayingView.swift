@@ -22,8 +22,8 @@ struct NowPlayingView: View {
         // Фон через .background, чтобы растянутая обложка не влияла на раскладку.
         .background {
             DynamicBackground(
-                artworkKey: engine.currentTrack?.artworkKey,
-                seed: engine.currentTrack?.title ?? "",
+                artworkKey: engine.currentTrack?.displayArtworkKey,
+                seed: engine.currentTrack?.id.uuidString ?? "",
                 isPlaying: engine.isPlaying,
                 glowColor: $glowColor
             )
@@ -75,7 +75,7 @@ struct NowPlayingView: View {
     }
 
     private func artwork(_ track: Track) -> some View {
-        ArtworkView(key: track.artworkKey, seed: track.title, size: .large, cornerRadius: DS.Radius.xxl)
+        ArtworkView(key: track.displayArtworkKey, seed: track.id.uuidString, size: .large, cornerRadius: DS.Radius.xxl)
             .dsShadow(engine.isPlaying ? DS.Shadow.artworkPlaying : DS.Shadow.artworkPaused, color: glowColor)
             .scaleEffect(engine.isPlaying ? 1 : DS.Scale.artworkPaused)
             .animation(DS.Motion.animation(DS.Motion.artwork, reduceMotion: reduceMotion), value: engine.isPlaying)

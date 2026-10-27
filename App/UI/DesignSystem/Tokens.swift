@@ -92,10 +92,8 @@ enum DS {
     enum Scale {
         static let artworkPaused: CGFloat = 0.86
         static let pressed: CGFloat = 0.9
-        /// Буква в сгенерированной обложке — доля стороны.
-        static let placeholderLetter: CGFloat = 0.44
-        /// Значок ♪ в сгенерированной обложке без буквы.
-        static let placeholderSymbol: CGFloat = 0.36
+        /// Значок в сгенерированной обложке — доля стороны.
+        static let placeholderSymbol: CGFloat = 0.4
         /// Внутренний круг иллюстрации пустого состояния: отступ — доля стороны.
         static let emptyInnerInset: CGFloat = 0.18
     }

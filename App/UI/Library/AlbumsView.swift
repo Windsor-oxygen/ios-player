@@ -51,7 +51,7 @@ struct AlbumCell: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Spacing.s) {
-            ArtworkView(key: album.artworkKey, seed: album.title, size: .medium, cornerRadius: DS.Radius.l)
+            ArtworkView(key: album.artworkKey, seed: album.id, size: .medium, cornerRadius: DS.Radius.l)
                 .dsShadow(DS.Shadow.card)
             VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
                 Text(album.title)
@@ -119,7 +119,7 @@ private struct AlbumHeader: View {
 
     var body: some View {
         VStack(spacing: DS.Spacing.l) {
-            ArtworkView(key: album.artworkKey, seed: album.title, size: .large, cornerRadius: DS.Radius.xl)
+            ArtworkView(key: album.artworkKey, seed: album.id, size: .large, cornerRadius: DS.Radius.xl)
                 .frame(maxWidth: artworkSide)
                 .dsShadow(DS.Shadow.header)
                 .padding(.horizontal, DS.Spacing.xxl)

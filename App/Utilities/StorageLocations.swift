@@ -24,7 +24,11 @@ struct StorageLocations: Sendable {
     var notImported: URL { documents.appending(path: "Не импортировано", directoryHint: .isDirectory) }
     var libraryIndex: URL { applicationSupport.appending(path: "Library.json") }
     var playbackState: URL { applicationSupport.appending(path: "Playback.json") }
-    var artwork: URL { caches.appending(path: "Artwork", directoryHint: .isDirectory) }
+    /// Миниатюры обложек. С 1.1.1 — в Application Support (Caches iOS очищает при нехватке
+    /// места, и обложки пропадали), без бэкапа в iCloud: их всегда можно пересоздать.
+    var artwork: URL { applicationSupport.appending(path: "Artwork", directoryHint: .isDirectory) }
+    /// Где миниатюры лежали в 1.0/1.1 — переносятся при первом запуске.
+    var legacyArtwork: URL { caches.appending(path: "Artwork", directoryHint: .isDirectory) }
     var downloads: URL { caches.appending(path: "Downloads", directoryHint: .isDirectory) }
 
     /// Абсолютный URL файла по пути относительно Documents.

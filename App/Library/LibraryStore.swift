@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import UIKit
 
 /// Состояние библиотеки для UI. Вся тяжёлая работа (скан, метаданные,
 /// обложки, копирование, JSON) выполняется вне main thread.
@@ -36,14 +37,30 @@ final class LibraryStore {
     @ObservationIgnored private var saveTask: Task<Void, Never>?
     @ObservationIgnored private var albumsByID: [String: Album] = [:]
     @ObservationIgnored private var artistsByID: [String: Artist] = [:]
+    @ObservationIgnored private let defaults: UserDefaults
+    @ObservationIgnored private let artworkReader: ArtworkReader
+    /// Ключ миниатюр → трек, из которого их можно пересоздать.
+    @ObservationIgnored private var artworkOwners: [String: UUID] = [:]
+    @ObservationIgnored private var artworkRepairs: [String: Task<String?, Never>] = [:]
+    /// Ключи, которые в этой сессии восстановить не удалось — не пытаемся снова на каждом показе.
+    @ObservationIgnored private var unrecoverableArtwork = Set<String>()
+    @ObservationIgnored private var artworkRecoveryTask: Task<Void, Never>?
+
+    /// Разовое восстановление обложек, потерянных в 1.0/1.1 (новый ключ UserDefaults).
+    private static let artworkRecoveryKey = "library.artworkRecovery"
+    private static let artworkRecoveryVersion = 1
+    /// Фоновое восстановление — не больше двух файлов одновременно, чтобы не мешать интерфейсу.
+    private static let artworkRecoveryConcurrency = 2
 
     /// Параллельных чтений метаданных: больше — без выигрыша на A13 и с риском подтормаживаний.
     private static let metadataConcurrency = 4
     /// Сколько результатов копить перед обновлением UI.
     private static let metadataBatch = 25
 
-    init(locations: StorageLocations) {
+    init(locations: StorageLocations, defaults: UserDefaults = .standard, artworkReader: ArtworkReader = .tags) {
         self.locations = locations
+        self.defaults = defaults
+        self.artworkReader = artworkReader
         self.persistence = LibraryPersistence(fileURL: locations.libraryIndex)
         self.importer = FileImporter(locations: locations)
         self.artwork = ArtworkStore(directory: locations.artwork)
@@ -82,6 +99,7 @@ final class LibraryStore {
     }
 
     private func loadIndex() async {
+        await Self.migrateArtwork(locations)
         switch await persistence.load() {
         case .loaded(let index):
             playlists = index.playlists
@@ -136,26 +154,47 @@ final class LibraryStore {
             scheduleSave()
         }
         await loadPendingMetadata()
+        startArtworkRecoveryIfNeeded()
         if !inboxReport.importedPaths.isEmpty || !inboxReport.failures.isEmpty {
             present(inboxReport)
         }
+    }
+
+    private nonisolated static func migrateArtwork(_ locations: StorageLocations) async {
+        ArtworkStore.migrate(from: locations.legacyArtwork, to: locations.artwork)
     }
 
     private nonisolated static func scan(_ locations: StorageLocations) async -> [ScannedFile] {
         FolderScanner.scan(locations)
     }
 
+    /// Что делать с обложкой трека после чтения тегов.
+    private enum ArtworkUpdate: Sendable {
+        /// Файл не прочитался или миниатюру не удалось записать — прежнюю обложку не трогаем.
+        case keep
+        case set(String)
+        /// Файл прочитан, обложки в нём нет.
+        case clear
+    }
+
     private struct ProcessedMetadata: Sendable {
         let id: UUID
         let metadata: TrackMetadata
-        let artworkKey: String?
+        let artwork: ArtworkUpdate
     }
 
     private nonisolated static func process(id: UUID, url: URL, artwork: ArtworkStore) async -> ProcessedMetadata {
         var metadata = await MetadataLoader.load(url: url)
-        let key = metadata.artworkData.flatMap { artwork.store(imageData: $0) }
+        let update: ArtworkUpdate
+        if !metadata.isPlayable {
+            update = .keep
+        } else if let data = metadata.artworkData {
+            update = artwork.store(imageData: data).map(ArtworkUpdate.set) ?? .keep
+        } else {
+            update = .clear
+        }
         metadata.artworkData = nil
-        return ProcessedMetadata(id: id, metadata: metadata, artworkKey: key)
+        return ProcessedMetadata(id: id, metadata: metadata, artwork: update)
     }
 
     private func loadPendingMetadata() async {
@@ -199,15 +238,22 @@ final class LibraryStore {
             guard let index = positions[result.id] else { continue }
             var track = updated[index]
             let meta = result.metadata
-            track.title = meta.title ?? Track.defaultTitle(forRelativePath: track.relativePath)
-            track.artist = meta.artist
-            track.album = meta.album
-            track.trackNumber = meta.trackNumber
-            track.discNumber = meta.discNumber
-            track.duration = meta.duration
-            track.artworkKey = result.artworkKey
-            track.isUnplayable = !meta.isPlayable
             track.needsMetadata = false
+            track.isUnplayable = !meta.isPlayable
+            // Файл не прочитался (в т. ч. временно): прежние теги и обложку не затираем.
+            if meta.isPlayable {
+                track.title = meta.title ?? Track.defaultTitle(forRelativePath: track.relativePath)
+                track.artist = meta.artist
+                track.album = meta.album
+                track.trackNumber = meta.trackNumber
+                track.discNumber = meta.discNumber
+                track.duration = meta.duration
+            }
+            switch result.artwork {
+            case .keep: break
+            case .set(let key): track.artworkKey = key
+            case .clear: track.artworkKey = nil
+            }
             updated[index] = track
         }
         setTracks(updated)
@@ -262,7 +308,7 @@ final class LibraryStore {
         let urls = tracks.filter { ids.contains($0.id) }.map { locations.fileURL(forRelativePath: $0.relativePath) }
         await Self.removeFiles(urls)
         forget(ids)
-        let keys = Set(tracks.compactMap(\.artworkKey))
+        let keys = Set(tracks.flatMap { [$0.artworkKey, $0.customArtworkKey].compactMap { $0 } })
         let artwork = self.artwork
         Task.detached(priority: .utility) { artwork.removeUnreferenced(keeping: keys) }
     }
@@ -360,6 +406,138 @@ final class LibraryStore {
         }
     }
 
+    // MARK: - Artwork
+
+    /// Миниатюра обложки. Если её нет на диске (очищено системой, потеряно в старой
+    /// версии) — пересоздаётся из своей обложки или из тегов файла, вне main thread.
+    func artworkImage(key: String, size: ArtworkStore.Size) async -> UIImage? {
+        if let image = await artwork.image(key: key, size: size) { return image }
+        guard await restoreArtwork(key: key) else { return nil }
+        return await artwork.image(key: key, size: size)
+    }
+
+    /// `true` — миниатюры с этим ключом снова на диске.
+    func restoreArtwork(key: String) async -> Bool {
+        if let running = artworkRepairs[key] { return await running.value == key }
+        guard !unrecoverableArtwork.contains(key),
+              let id = artworkOwners[key], let track = tracksByID[id] else { return false }
+        let source = artworkSource(for: track, key: key)
+        let artwork = self.artwork
+        let reader = artworkReader
+        let task = Task { await Self.rebuildArtwork(from: source, artwork: artwork, reader: reader) }
+        artworkRepairs[key] = task
+        let rebuilt = await task.value
+        artworkRepairs[key] = nil
+        if rebuilt == key { return true }
+        unrecoverableArtwork.insert(key)
+        // Картинку в тегах заменили — переключаем трек на новую.
+        if let rebuilt, case .tags = source { replaceArtworkKey(key, with: rebuilt) }
+        return false
+    }
+
+    private enum ArtworkSource: Sendable {
+        case custom(URL)
+        case tags(URL)
+    }
+
+    private func artworkSource(for track: Track, key: String) -> ArtworkSource {
+        if key == track.customArtworkKey, let path = track.customArtworkPath {
+            return .custom(locations.applicationSupport.appending(path: path))
+        }
+        return .tags(fileURL(for: track))
+    }
+
+    private nonisolated static func rebuildArtwork(
+        from source: ArtworkSource, artwork: ArtworkStore, reader: ArtworkReader
+    ) async -> String? {
+        switch source {
+        case .custom(let url):
+            guard let data = try? Data(contentsOf: url) else { return nil }
+            return artwork.store(imageData: data)
+        case .tags(let url):
+            guard case .found(let data) = await reader.read(url) else { return nil }
+            return artwork.store(imageData: data)
+        }
+    }
+
+    private func replaceArtworkKey(_ old: String, with new: String) {
+        var updated = tracks
+        for index in updated.indices where updated[index].artworkKey == old {
+            updated[index].artworkKey = new
+        }
+        setTracks(updated)
+        scheduleSave()
+    }
+
+    /// Один раз после обновления до 1.1.1: вернуть обложки, потерянные в 1.0/1.1
+    /// (кэш очищен системой или ключ затёрт). В фоне, свои обложки не трогаем.
+    private func startArtworkRecoveryIfNeeded() {
+        guard artworkRecoveryTask == nil, !isReadOnly,
+              defaults.integer(forKey: Self.artworkRecoveryKey) < Self.artworkRecoveryVersion else { return }
+        artworkRecoveryTask = Task(priority: .utility) { await self.recoverLostArtwork() }
+    }
+
+    /// Для тестов: дождаться окончания разового восстановления.
+    func waitForArtworkRecovery() async {
+        await artworkRecoveryTask?.value
+    }
+
+    private func recoverLostArtwork() async {
+        let candidates = tracks
+            .filter { !$0.isMissing && !$0.needsMetadata && $0.customArtworkKey == nil }
+            .map { (id: $0.id, url: fileURL(for: $0), key: $0.artworkKey) }
+        let artwork = self.artwork
+        let reader = artworkReader
+        await withTaskGroup(of: (UUID, String)?.self) { group in
+            var next = 0
+            func enqueue() {
+                guard next < candidates.count else { return }
+                let item = candidates[next]
+                next += 1
+                group.addTask(priority: .utility) {
+                    await Self.recoverArtwork(url: item.url, key: item.key, artwork: artwork, reader: reader)
+                        .map { (item.id, $0) }
+                }
+            }
+            for _ in 0..<Self.artworkRecoveryConcurrency { enqueue() }
+
+            var found: [UUID: String] = [:]
+            while let result = await group.next() {
+                if let pair = result { found[pair.0] = pair.1 }
+                enqueue()
+                if found.count >= Self.metadataBatch {
+                    applyRecoveredArtwork(found)
+                    found.removeAll()
+                }
+            }
+            applyRecoveredArtwork(found)
+        }
+        defaults.set(Self.artworkRecoveryVersion, forKey: Self.artworkRecoveryKey)
+        Log.library.info("Восстановление обложек после обновления завершено")
+    }
+
+    /// Новый ключ, если обложку удалось вернуть; `nil` — менять нечего.
+    private nonisolated static func recoverArtwork(
+        url: URL, key: String?, artwork: ArtworkStore, reader: ArtworkReader
+    ) async -> String? {
+        if let key, artwork.hasImages(key: key) { return nil }
+        guard case .found(let data) = await reader.read(url),
+              let recovered = artwork.store(imageData: data) else { return nil }
+        return recovered == key ? nil : recovered
+    }
+
+    private func applyRecoveredArtwork(_ found: [UUID: String]) {
+        guard !found.isEmpty else { return }
+        var updated = tracks
+        for index in updated.indices {
+            // Пока шло восстановление, пользователь мог поставить свою обложку.
+            guard let key = found[updated[index].id], updated[index].customArtworkKey == nil else { continue }
+            updated[index].artworkKey = key
+        }
+        setTracks(updated)
+        scheduleSave()
+    }
+
     // MARK: - Derived state
 
     private func setTracks(_ newTracks: [Track]) {
@@ -371,6 +549,12 @@ final class LibraryStore {
         artists = LibraryQuery.artists(from: visible)
         albumsByID = Dictionary(albums.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         artistsByID = Dictionary(artists.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        var owners: [String: UUID] = [:]
+        for track in newTracks {
+            if let key = track.customArtworkKey { owners[key] = track.id }
+            if let key = track.artworkKey, owners[key] == nil { owners[key] = track.id }
+        }
+        artworkOwners = owners
         revision &+= 1
         onTracksChanged?(removed)
     }

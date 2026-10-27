@@ -30,11 +30,7 @@ extension DS {
         static let illustration = SwiftUI.Font.system(size: 52, weight: .semibold, design: .rounded)
         static let illustrationAccent = SwiftUI.Font.system(.title2, weight: .semibold)
 
-        /// Буква в сгенерированной обложке: размер от стороны квадрата.
-        static func placeholderLetter(side: CGFloat) -> SwiftUI.Font {
-            .system(size: side * Scale.placeholderLetter, weight: .bold, design: .rounded)
-        }
-
+        /// Значок в сгенерированной обложке: размер от стороны квадрата.
         static func placeholderSymbol(side: CGFloat) -> SwiftUI.Font {
             .system(size: side * Scale.placeholderSymbol, weight: .semibold)
         }

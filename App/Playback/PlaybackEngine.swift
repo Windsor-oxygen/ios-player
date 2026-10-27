@@ -291,7 +291,7 @@ final class PlaybackEngine {
         }
         guard let track = currentTrack, let updated = library.tracksByID[track.id], updated != track else { return }
         currentTrack = updated
-        if updated.artworkKey != track.artworkKey { loadArtwork(for: updated) }
+        if updated.displayArtworkKey != track.displayArtworkKey { loadArtwork(for: updated) }
         publishNowPlaying()
     }
 
@@ -471,11 +471,11 @@ final class PlaybackEngine {
 
     private func loadArtwork(for track: Track) {
         artworkTask?.cancel()
-        guard let key = track.artworkKey else { return }
-        let store = library.artwork
+        // Своя обложка → обложка из файла; пропавшая миниатюра пересоздаётся.
+        guard let key = track.displayArtworkKey else { return }
         let trackID = track.id
         artworkTask = Task { [weak self] in
-            guard let image = await store.image(key: key, size: .large),
+            guard let image = await self?.library.artworkImage(key: key, size: .large),
                   !Task.isCancelled,
                   let self,
                   self.currentTrack?.id == trackID else { return }

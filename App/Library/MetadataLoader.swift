@@ -13,7 +13,24 @@ struct TrackMetadata: Sendable {
     static let unplayable = TrackMetadata(duration: 0, isPlayable: false)
 }
 
+/// Результат чтения обложки из тегов файла.
+enum ArtworkRead: Equatable, Sendable {
+    case found(Data)
+    /// Файл прочитан, обложки в нём нет.
+    case absent
+    /// Файл прочитать не удалось — прежнюю обложку не трогаем.
+    case failed
+}
+
+/// Откуда брать обложку из тегов аудиофайла (в тестах подменяется).
+struct ArtworkReader: Sendable {
+    let read: @Sendable (URL) async -> ArtworkRead
+
+    static let tags = ArtworkReader { await MetadataLoader.loadArtwork(url: $0) }
+}
+
 /// Асинхронное чтение тегов через AVURLAsset. Вызывается вне main thread.
+/// Файлы только читаются — в аудиофайлы приложение ничего не пишет.
 enum MetadataLoader {
     static func load(url: URL) async -> TrackMetadata {
         let asset = AVURLAsset(url: url)
@@ -51,6 +68,16 @@ enum MetadataLoader {
             }
         }
         return result
+    }
+
+    /// Только обложка — для восстановления пропавших миниатюр.
+    static func loadArtwork(url: URL) async -> ArtworkRead {
+        guard let common = try? await AVURLAsset(url: url).load(.commonMetadata) else { return .failed }
+        guard let item = AVMetadataItem.metadataItems(from: common, filteredByIdentifier: .commonIdentifierArtwork).first else {
+            return .absent
+        }
+        guard let data = try? await item.load(.dataValue), !data.isEmpty else { return .failed }
+        return .found(data)
     }
 
     private static func string(in items: [AVMetadataItem], _ identifier: AVMetadataIdentifier) async -> String? {

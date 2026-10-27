@@ -108,7 +108,7 @@ enum LibraryQuery {
                 title: first?.album ?? unknownAlbum,
                 artist: first?.artist ?? unknownArtist,
                 trackIDs: sorted.map(\.id),
-                artworkKey: sorted.lazy.compactMap(\.artworkKey).first
+                artworkKey: sorted.lazy.compactMap(\.displayArtworkKey).first
             )
         }
         .sorted { ordered($0.title, $1.title, tie: ($0.id, $1.id)) }
@@ -132,7 +132,7 @@ enum LibraryQuery {
                 name: members.first?.artist ?? unknownArtist,
                 albumIDs: albumIDs,
                 trackIDs: byTitle.map(\.id),
-                artworkKey: byAlbum.lazy.compactMap(\.artworkKey).first
+                artworkKey: byAlbum.lazy.compactMap(\.displayArtworkKey).first
             )
         }
         .sorted { ordered($0.name, $1.name, tie: ($0.id, $1.id)) }

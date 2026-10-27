@@ -15,7 +15,7 @@ final class AppContainer {
     init(locations: StorageLocations = .standard, defaults: UserDefaults = .standard) {
         self.defaults = defaults
         settings = AppSettings(defaults: defaults)
-        library = LibraryStore(locations: locations)
+        library = LibraryStore(locations: locations, defaults: defaults)
         playback = PlaybackEngine(library: library, settings: settings, locations: locations)
         downloads = DownloadManager(locations: locations, library: library)
         // Слабая ссылка: библиотека не должна удерживать движок.

@@ -94,7 +94,7 @@ private struct PlaylistRow: View {
 
     var body: some View {
         HStack(spacing: DS.Spacing.m) {
-            ArtworkView(key: coverKey, seed: playlist.name, cornerRadius: DS.Radius.m)
+            ArtworkView(key: coverKey, seed: playlist.id.uuidString, cornerRadius: DS.Radius.m)
                 .frame(width: DS.Size.playlistArtwork, height: DS.Size.playlistArtwork)
             VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
                 Text(playlist.name)
@@ -111,7 +111,7 @@ private struct PlaylistRow: View {
 
     /// Обложка первой песни с обложкой (смотрим только начало плейлиста, чтобы не перебирать всё).
     private var coverKey: String? {
-        playlist.trackIDs.prefix(LibraryQuery.playlistCoverLookahead).lazy.compactMap { library.tracksByID[$0]?.artworkKey }.first
+        playlist.trackIDs.prefix(LibraryQuery.playlistCoverLookahead).lazy.compactMap { library.tracksByID[$0]?.displayArtworkKey }.first
     }
 }
 
