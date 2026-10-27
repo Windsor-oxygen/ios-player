@@ -306,7 +306,7 @@ final class LibraryStore {
     func delete(_ ids: Set<UUID>) async {
         guard !ids.isEmpty else { return }
         let deleted = tracks.filter { ids.contains($0.id) }
-        // Аудиофайлы и наши файлы своих обложек этих треков.
+        // Аудиофайлы — по явной команде пользователя; вместе с ними наши файлы своих обложек.
         let urls = deleted.map { locations.fileURL(forRelativePath: $0.relativePath) }
             + deleted.compactMap(\.customArtworkPath).map { locations.supportURL(forRelativePath: $0) }
         await Self.removeFiles(urls)
@@ -320,6 +320,12 @@ final class LibraryStore {
     /// (для песен, файлов которых уже нет).
     func forget(_ ids: Set<UUID>) {
         guard !ids.isEmpty else { return }
+        // Свои обложки убранных записей — наши файлы, без трека они не нужны.
+        let customPaths = tracks.filter { ids.contains($0.id) }.compactMap(\.customArtworkPath)
+        if !customPaths.isEmpty {
+            let locations = self.locations
+            Task.detached(priority: .utility) { await Self.removeCustomArtwork(customPaths, locations: locations) }
+        }
         setTracks(tracks.filter { !ids.contains($0.id) })
         for index in playlists.indices {
             playlists[index].trackIDs.removeAll { ids.contains($0) }
@@ -447,6 +453,8 @@ final class LibraryStore {
     private nonisolated static func saveCustomArtwork(
         _ jpeg: Data, for ids: [UUID], locations: StorageLocations, artwork: ArtworkStore
     ) async throws -> String {
+        // Сначала миниатюры: если на них не хватит места, файлы своей обложки не пишем.
+        guard let key = artwork.store(imageData: jpeg) else { throw CustomArtworkError.saveFailed }
         let fm = FileManager.default
         do {
             try fm.createDirectory(at: locations.customArtwork, withIntermediateDirectories: true)
@@ -458,7 +466,6 @@ final class LibraryStore {
             Log.library.error("Не удалось сохранить свою обложку: \(error.localizedDescription, privacy: .public)")
             throw CustomArtworkError.saveFailed
         }
-        guard let key = artwork.store(imageData: jpeg) else { throw CustomArtworkError.saveFailed }
         return key
     }
 

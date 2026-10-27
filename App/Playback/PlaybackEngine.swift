@@ -198,7 +198,7 @@ final class PlaybackEngine {
         var candidate = queue
         let previousEntry = candidate.previous()?.id
         if RestartPolicy.previousRestartsCurrent(
-            elapsed: currentSeconds, threshold: Self.restartThreshold,
+            elapsed: seeker.isSeeking ? clock.currentTime : currentSeconds, threshold: Self.restartThreshold,
             previousEntry: previousEntry, currentEntry: queue.current?.id
         ) {
             restartCurrent(play: isPlaying)
