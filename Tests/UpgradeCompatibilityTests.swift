@@ -40,6 +40,27 @@ final class UpgradeCompatibilityTests: XCTestCase {
         try Fixtures.assertSameJSON(data, try JSONEncoder().encode(index))
     }
 
+    /// Формат 1.1 совпадает с 1.0 (в 1.1 схема не менялась), поэтому Library-v1.json
+    /// покрывает обе версии. Новые поля 1.1.1 при отсутствии своей обложки не пишутся.
+    func testNewOptionalFieldsAreOmittedWhenUnused() throws {
+        let index = try JSONDecoder().decode(LibraryIndex.self, from: Fixtures.data("Library-v1"))
+        XCTAssertTrue(index.tracks.allSatisfy { $0.customArtworkPath == nil && $0.customArtworkKey == nil })
+        let json = try XCTUnwrap(String(data: JSONEncoder().encode(index), encoding: .utf8))
+        XCTAssertFalse(json.contains("customArtwork"))
+    }
+
+    func testLibraryV111Decodes() throws {
+        let data = try Fixtures.data("Library-v1.1.1")
+        let index = try JSONDecoder().decode(LibraryIndex.self, from: data)
+        XCTAssertEqual(index.version, 1)
+        let custom = index.tracks[2]
+        XCTAssertEqual(custom.customArtworkPath, "CustomArtwork/33333333-3333-4333-8333-333333333333.jpg")
+        XCTAssertEqual(custom.displayArtworkKey, custom.customArtworkKey)
+        XCTAssertEqual(index.tracks[0].displayArtworkKey, index.tracks[0].artworkKey)
+        XCTAssertNil(index.tracks[1].displayArtworkKey)
+        try Fixtures.assertSameJSON(data, try JSONEncoder().encode(index))
+    }
+
     func testPlaybackV1Decodes() throws {
         let snapshot = try JSONDecoder().decode(PlaybackSnapshot.self, from: Fixtures.data("Playback-v1"))
         XCTAssertEqual(snapshot.position, 42.5)

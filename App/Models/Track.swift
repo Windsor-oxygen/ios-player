@@ -22,6 +22,14 @@ struct Track: Codable, Identifiable, Hashable, Sendable {
     var isUnplayable: Bool
     /// Метаданные ещё не читались или файл изменился.
     var needsMetadata: Bool
+    /// Своя обложка (новое в 1.1.1): путь относительно Application Support,
+    /// `CustomArtwork/<id>.jpg`. Опционально — файлы 1.0/1.1 читаются как есть.
+    var customArtworkPath: String?
+    /// Ключ миниатюр своей обложки в `ArtworkStore`.
+    var customArtworkKey: String?
+
+    /// Что показывать: своя обложка → обложка из файла → (nil) заглушка.
+    var displayArtworkKey: String? { customArtworkKey ?? artworkKey }
 
     var isAvailable: Bool { !isMissing && !isUnplayable }
 
