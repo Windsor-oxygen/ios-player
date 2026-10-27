@@ -75,6 +75,7 @@ struct AlbumDetailView: View {
 
     @Environment(LibraryStore.self) private var library
     @Environment(PlaybackEngine.self) private var engine
+    @Environment(AppPresenter.self) private var presenter
     @State private var pendingDeletion: Track?
     @State private var playlistTarget: TrackSelection?
 
@@ -104,6 +105,29 @@ struct AlbumDetailView: View {
             .listStyle(.plain)
             .navigationTitle(album.title)
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Button {
+                            presenter.artworkEditTarget = ArtworkEditTarget(
+                                trackIDs: album.trackIDs, title: album.title, isAlbum: true
+                            )
+                        } label: {
+                            Label("Сменить обложку альбома…", systemImage: "photo")
+                        }
+                        if tracks.contains(where: { $0.customArtworkKey != nil }) {
+                            Button {
+                                Task { await library.resetCustomArtwork(for: album.trackIDs) }
+                            } label: {
+                                Label("Сбросить обложку альбома", systemImage: "arrow.uturn.backward")
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                            .accessibilityLabel("Действия с альбомом")
+                    }
+                }
+            }
             .trackActionsHost(pendingDeletion: $pendingDeletion, playlistTarget: $playlistTarget)
         } else {
             EmptyStateView(symbol: "square.stack", title: "Альбом не найден")

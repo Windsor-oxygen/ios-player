@@ -34,6 +34,8 @@ for appearance in dark light; do
   shot "03-settings-$appearance" "$appearance" -PlayerDemo settings
   shot "04-app-icon-$appearance" "$appearance" -PlayerDemo icons
   shot "05-empty-$appearance" "$appearance" -PlayerDemo empty
+  shot "08-artwork-crop-$appearance" "$appearance" -PlayerDemo artworkCrop
+  shot "09-placeholder-now-playing-$appearance" "$appearance" -PlayerDemo placeholder
 done
 shot "06-library-large-text-dark" dark -PlayerDemo library \
   -UIPreferredContentSizeCategoryName UICTContentSizeCategoryAccessibilityL

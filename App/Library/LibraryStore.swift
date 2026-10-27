@@ -305,7 +305,10 @@ final class LibraryStore {
     /// Только по явной команде пользователя с подтверждением.
     func delete(_ ids: Set<UUID>) async {
         guard !ids.isEmpty else { return }
-        let urls = tracks.filter { ids.contains($0.id) }.map { locations.fileURL(forRelativePath: $0.relativePath) }
+        let deleted = tracks.filter { ids.contains($0.id) }
+        // Аудиофайлы и наши файлы своих обложек этих треков.
+        let urls = deleted.map { locations.fileURL(forRelativePath: $0.relativePath) }
+            + deleted.compactMap(\.customArtworkPath).map { locations.supportURL(forRelativePath: $0) }
         await Self.removeFiles(urls)
         forget(ids)
         let keys = Set(tracks.flatMap { [$0.artworkKey, $0.customArtworkKey].compactMap { $0 } })
@@ -408,6 +411,63 @@ final class LibraryStore {
 
     // MARK: - Artwork
 
+    /// Своя обложка для треков (одного или всего альбома). `jpeg` — уже обрезанная
+    /// квадратная картинка. Каждому треку — свой файл `CustomArtwork/<id>.jpg`,
+    /// миниатюры общие (ключ по содержимому). В аудиофайлы ничего не пишется.
+    func setCustomArtwork(_ jpeg: Data, for ids: [UUID]) async throws {
+        guard !isReadOnly else { throw CustomArtworkError.readOnlyLibrary }
+        let targets = ids.filter { tracksByID[$0] != nil }
+        guard !targets.isEmpty else { return }
+        let key = try await Self.saveCustomArtwork(jpeg, for: targets, locations: locations, artwork: artwork)
+        var updated = tracks
+        for index in updated.indices where targets.contains(updated[index].id) {
+            updated[index].customArtworkKey = key
+            updated[index].customArtworkPath = StorageLocations.customArtworkPath(for: updated[index].id)
+        }
+        unrecoverableArtwork.remove(key)
+        setTracks(updated)
+        scheduleSave()
+    }
+
+    /// Вернуть обложку из файла (или заглушку). Удаляется только наш файл своей обложки.
+    func resetCustomArtwork(for ids: [UUID]) async {
+        let targets = Set(ids)
+        let paths = tracks.filter { targets.contains($0.id) }.compactMap(\.customArtworkPath)
+        guard !paths.isEmpty else { return }
+        var updated = tracks
+        for index in updated.indices where targets.contains(updated[index].id) {
+            updated[index].customArtworkKey = nil
+            updated[index].customArtworkPath = nil
+        }
+        setTracks(updated)
+        scheduleSave()
+        await Self.removeCustomArtwork(paths, locations: locations)
+    }
+
+    private nonisolated static func saveCustomArtwork(
+        _ jpeg: Data, for ids: [UUID], locations: StorageLocations, artwork: ArtworkStore
+    ) async throws -> String {
+        let fm = FileManager.default
+        do {
+            try fm.createDirectory(at: locations.customArtwork, withIntermediateDirectories: true)
+            for id in ids {
+                try jpeg.write(to: locations.supportURL(forRelativePath: StorageLocations.customArtworkPath(for: id)),
+                               options: [.atomic])
+            }
+        } catch {
+            Log.library.error("Не удалось сохранить свою обложку: \(error.localizedDescription, privacy: .public)")
+            throw CustomArtworkError.saveFailed
+        }
+        guard let key = artwork.store(imageData: jpeg) else { throw CustomArtworkError.saveFailed }
+        return key
+    }
+
+    private nonisolated static func removeCustomArtwork(_ paths: [String], locations: StorageLocations) async {
+        for path in paths {
+            try? FileManager.default.removeItem(at: locations.supportURL(forRelativePath: path))
+        }
+    }
+
     /// Миниатюра обложки. Если её нет на диске (очищено системой, потеряно в старой
     /// версии) — пересоздаётся из своей обложки или из тегов файла, вне main thread.
     func artworkImage(key: String, size: ArtworkStore.Size) async -> UIImage? {
@@ -442,7 +502,7 @@ final class LibraryStore {
 
     private func artworkSource(for track: Track, key: String) -> ArtworkSource {
         if key == track.customArtworkKey, let path = track.customArtworkPath {
-            return .custom(locations.applicationSupport.appending(path: path))
+            return .custom(locations.supportURL(forRelativePath: path))
         }
         return .tags(fileURL(for: track))
     }

@@ -16,6 +16,10 @@ struct DemoMode {
         case settings
         case icons
         case empty
+        /// Экран обрезки своей обложки.
+        case artworkCrop
+        /// «Сейчас играет» для трека без обложки (сгенерированная заглушка).
+        case placeholder
     }
 
     let screen: Screen
@@ -76,6 +80,18 @@ struct DemoMode {
             container.presenter.showsSettings = true
         case .empty:
             break
+        case .artworkCrop:
+            guard let track = container.library.tracks.first(where: { $0.displayArtworkKey != nil }) else { return }
+            container.presenter.artworkEditTarget = ArtworkEditTarget(
+                trackIDs: [track.id], title: track.title, isAlbum: false,
+                preselectedImage: DemoLibrary.sampleArtwork()
+            )
+        case .placeholder:
+            guard let track = container.library.tracks.first(where: { $0.displayArtworkKey == nil && $0.isAvailable }) else {
+                return
+            }
+            container.playback.play([track.id])
+            container.presenter.showsNowPlaying = true
         }
     }
 }
@@ -167,6 +183,11 @@ private enum DemoLibrary {
         try? fm.createDirectory(at: locations.applicationSupport, withIntermediateDirectories: true)
         try? JSONEncoder().encode(index).write(to: locations.libraryIndex)
         try? JSONEncoder().encode(snapshot).write(to: locations.playbackState)
+    }
+
+    /// Неквадратная картинка для экрана обрезки (как фото с телефона).
+    static func sampleArtwork() -> UIImage? {
+        cover(0x0F0C29, 0xFF2BD6, motif: 2).flatMap(UIImage.init(data:))
     }
 
     /// Обложка: градиент и простой геометрический мотив.

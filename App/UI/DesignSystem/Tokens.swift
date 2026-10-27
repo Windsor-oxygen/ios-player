@@ -111,6 +111,13 @@ enum DS {
         static let nowPlayingTitle = 2
     }
 
+    /// Экран обрезки своей обложки.
+    enum Crop {
+        static let maxZoom: CGFloat = 4
+        /// Сетка третей.
+        static let gridDivisions = 3
+    }
+
     /// Пороги жестов.
     enum Gesture {
         static let dragMinimum: CGFloat = 16

@@ -23,6 +23,8 @@ private struct TrackRowActions: ViewModifier {
     @Binding var pendingDeletion: Track?
     @Binding var playlistTarget: TrackSelection?
     @Environment(PlaybackEngine.self) private var engine
+    @Environment(LibraryStore.self) private var library
+    @Environment(AppPresenter.self) private var presenter
     @State private var queueAdds = 0
 
     func body(content: Content) -> some View {
@@ -47,6 +49,18 @@ private struct TrackRowActions: ViewModifier {
                     playlistTarget = TrackSelection(trackIDs: [track.id])
                 } label: {
                     Label("Добавить в плейлист…", systemImage: "text.badge.plus")
+                }
+                Button {
+                    presenter.artworkEditTarget = ArtworkEditTarget(trackIDs: [track.id], title: track.title, isAlbum: false)
+                } label: {
+                    Label("Сменить обложку…", systemImage: "photo")
+                }
+                if track.customArtworkKey != nil {
+                    Button {
+                        Task { await library.resetCustomArtwork(for: [track.id]) }
+                    } label: {
+                        Label("Сбросить обложку", systemImage: "arrow.uturn.backward")
+                    }
                 }
                 Divider()
                 Button(role: .destructive) {

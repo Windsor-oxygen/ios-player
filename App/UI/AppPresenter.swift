@@ -15,4 +15,6 @@ final class AppPresenter {
     var showsSettings = false
     /// Навигация внутри настроек; сбрасывается при закрытии.
     var settingsPath: [SettingsRoute] = []
+    /// «Сменить обложку» из списков (из «Сейчас играет» — свой лист поверх плеера).
+    var artworkEditTarget: ArtworkEditTarget?
 }
