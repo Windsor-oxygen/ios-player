@@ -19,9 +19,11 @@ diag="$out/diagnostics"
 marker=$(mktemp)
 failed=()
 
-# Процесс приложения жив (иначе на снимке будет рабочий стол).
+# Процесс приложения жив (иначе на снимке будет рабочий стол). Приложения симулятора —
+# обычные процессы хоста, PID печатает `simctl launch`. Без пайпа: `… | grep -q` под
+# pipefail ложно «падает», когда grep закрывает канал раньше, чем писатель допишет.
 app_running() {
-  xcrun simctl spawn "$udid" launchctl list 2>/dev/null | grep -q "UIKitApplication:$bundle"
+  [[ -n "$1" ]] && kill -0 "$1" 2>/dev/null
 }
 
 # Краш-репорты (симулятор пишет их на хост) и журнал приложения.
@@ -40,12 +42,15 @@ shot() {
   shift 2
   xcrun simctl ui "$udid" appearance "$appearance" || true
   xcrun simctl terminate "$udid" "$bundle" >/dev/null 2>&1 || true
-  xcrun simctl launch "$udid" "$bundle" -AppleLanguages "(ru)" -AppleLocale ru_RU \
-    -PlayerDemoAppearance "$appearance" "$@" >/dev/null
+  local launched pid
+  launched=$(xcrun simctl launch "$udid" "$bundle" -AppleLanguages "(ru)" -AppleLocale ru_RU \
+    -PlayerDemoAppearance "$appearance" "$@")
+  # Вывод: «<bundle>: <PID>».
+  pid="${launched##*: }"
   # Генерация демо-данных, сканирование, анимации появления.
   sleep 7
   xcrun simctl io "$udid" screenshot --type=png "$out/$name.png" >/dev/null
-  if app_running; then
+  if app_running "$pid"; then
     echo "снят $name (приложение запущено)"
   else
     echo "::error::$name: к моменту снимка приложение не запущено (упало или закрылось)"
