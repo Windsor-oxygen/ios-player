@@ -46,6 +46,27 @@ final class UpgradeScenarioTests: XCTestCase {
         XCTAssertEqual(settings.lockScreenControls, .skip)
     }
 
+    /// 1.1 → 1.1.1: миниатюры из Caches переносятся, ключи обложек и всё остальное — без изменений.
+    func testUpgradeFrom11KeepsArtworkAndLibrary() async throws {
+        let locations = try TestSupport.makeLocations()
+        defer { TestSupport.cleanUp(locations) }
+        let original = try JSONDecoder().decode(LibraryIndex.self, from: Fixtures.data("Library-v1"))
+        try installV1Container(original, at: locations)
+        let key = try XCTUnwrap(original.tracks[0].artworkKey)
+        for size in ["small", "medium", "large"] {
+            try TestSupport.write(Data("jpeg".utf8), to: locations.legacyArtwork.appending(path: "\(key)-\(size).jpg"))
+        }
+
+        let library = LibraryStore(locations: locations, defaults: try Fixtures.defaults(from: "Settings-v1"))
+        await library.refresh()
+        await library.waitForArtworkRecovery()
+
+        XCTAssertEqual(library.tracks, original.tracks)
+        XCTAssertEqual(library.playlists, original.playlists)
+        XCTAssertTrue(library.artwork.hasImages(key: key))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: locations.legacyArtwork.path(percentEncoded: false)))
+    }
+
     func testNewFilesAddedWhileOldVersionWasInstalledAreAppended() async throws {
         let locations = try TestSupport.makeLocations()
         defer { TestSupport.cleanUp(locations) }

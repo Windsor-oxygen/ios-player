@@ -31,23 +31,25 @@ struct ArtworkView: View {
                 image = nil
                 return
             }
-            let loaded = await library.artwork.image(key: key, size: size)
+            // Если миниатюры нет на диске, библиотека пересоздаст её из источника.
+            let loaded = await library.artworkImage(key: key, size: size)
             guard !Task.isCancelled else { return }
             image = loaded
         }
     }
 }
 
-/// Заглушка для трека без обложки: цвета и буква стабильны для одного названия.
+/// Заглушка для трека без обложки: градиент и значок выбираются по id трека
+/// (альбома, исполнителя) и одинаковы при каждом показе.
 /// Всё вычисляется один раз в `init`, а не в `body`.
 struct GeneratedArtwork: View {
     private let colors: [Color]
-    private let letter: String?
+    private let symbol: String
 
     init(seed: String) {
         let pair = DS.Palette.placeholderPair(for: seed)
         colors = [Color(pair.0), Color(pair.1)]
-        letter = seed.first(where: \.isLetter).map { String($0).uppercased() }
+        symbol = DS.Palette.placeholderSymbol(for: seed)
     }
 
     var body: some View {
@@ -59,15 +61,10 @@ struct GeneratedArtwork: View {
                     colors: [DS.Palette.onArtwork.opacity(DS.Opacity.soft), .clear],
                     center: .topLeading, startRadius: 0, endRadius: side
                 )
-                if let letter {
-                    Text(letter)
-                        .font(DS.Font.placeholderLetter(side: side))
-                        .foregroundStyle(DS.Palette.onArtwork.opacity(DS.Opacity.strong))
-                } else {
-                    Image(systemName: "music.note")
-                        .font(DS.Font.placeholderSymbol(side: side))
-                        .foregroundStyle(DS.Palette.onArtworkSecondary)
-                }
+                Image(systemName: symbol)
+                    .font(DS.Font.placeholderSymbol(side: side))
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(DS.Palette.onArtwork.opacity(DS.Opacity.strong))
             }
             .frame(width: proxy.size.width, height: proxy.size.height)
         }

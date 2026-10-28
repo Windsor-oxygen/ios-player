@@ -43,8 +43,10 @@ final class PlaybackEngine {
     @ObservationIgnored private var preloadedItemID: ObjectIdentifier?
     /// Позиция, на которую нужно перейти, когда элемент будет готов.
     @ObservationIgnored private var pendingSeek: (item: ObjectIdentifier, time: TimeInterval)?
-    @ObservationIgnored private var isSeeking = false
-    @ObservationIgnored private var seekGeneration = 0
+    /// Перемотка: пауза → seek → play в completion.
+    @ObservationIgnored private let seeker = SeekSequencer()
+    /// Элементы, окончание которых уже обработано (уведомление может прийти повторно).
+    @ObservationIgnored private var finishedItems = Set<ObjectIdentifier>()
     @ObservationIgnored private var publishedDuration: TimeInterval = 0
     @ObservationIgnored private var resumeAfterInterruption = false
     @ObservationIgnored private var didRestore = false
@@ -113,6 +115,18 @@ final class PlaybackEngine {
             show(String(localized: "Файл «\(tapped.title)» недоступен"))
             return
         }
+        // Нажали на уже загруженный трек (играет, на паузе, доиграл) — перезапуск
+        // перемоткой в 0, без пересоздания плеера и без двойного начала.
+        if trackIDs.indices.contains(index), let item = player.currentItem,
+           RestartPolicy.restartsInPlace(tapped: trackIDs[index], current: currentTrack?.id, hasLoadedItem: true) {
+            queue.replace(with: trackIDs, startAt: index, shuffled: false)
+            let itemID = ObjectIdentifier(item)
+            if let entry = queue.current { itemEntries[itemID] = entry.id }
+            finishedItems.remove(itemID)
+            restartCurrent(play: true)
+            queueDidChange()
+            return
+        }
         play(trackIDs, startAt: index)
     }
 
@@ -137,8 +151,12 @@ final class PlaybackEngine {
             return .commandFailed
         }
         resumeAfterInterruption = false
-        player.play()
         isPlaying = true
+        // Идёт перемотка (в т. ч. на сохранённую позицию) — звук включится в её completion,
+        // а не с начала трека до того, как она закончится.
+        if pendingSeek == nil && !seeker.isSeeking {
+            player.play()
+        }
         publishNowPlaying()
         persist(force: true)
         return .success
@@ -149,7 +167,7 @@ final class PlaybackEngine {
         guard currentTrack != nil else { return .noSuchContent }
         player.pause()
         isPlaying = false
-        if !isSeeking { clock.set(time: currentSeconds) }
+        if !seeker.isSeeking { clock.set(time: currentSeconds) }
         publishNowPlaying()
         persist(force: true)
         return .success
@@ -177,10 +195,17 @@ final class PlaybackEngine {
     @discardableResult
     func previous() -> MPRemoteCommandHandlerStatus {
         guard currentTrack != nil else { return .noSuchContent }
-        if currentSeconds > Self.restartThreshold {
-            return seek(to: 0)
+        var candidate = queue
+        let previousEntry = candidate.previous()?.id
+        if RestartPolicy.previousRestartsCurrent(
+            elapsed: seeker.isSeeking ? clock.currentTime : currentSeconds, threshold: Self.restartThreshold,
+            previousEntry: previousEntry, currentEntry: queue.current?.id
+        ) {
+            restartCurrent(play: isPlaying)
+            return .success
         }
-        load(queue.previous(), autoplay: isPlaying)
+        queue = candidate
+        load(queue.current, autoplay: isPlaying)
         return .success
     }
 
@@ -193,16 +218,12 @@ final class PlaybackEngine {
         if item.status != .readyToPlay {
             pendingSeek = (ObjectIdentifier(item), target)
         } else {
-            isSeeking = true
-            seekGeneration += 1
-            let generation = seekGeneration
-            player.seek(
-                to: CMTime(seconds: target, preferredTimescale: 600),
-                toleranceBefore: .zero,
-                toleranceAfter: .zero
-            ) { [weak self] _ in
-                Task { @MainActor [weak self] in self?.seekDidFinish(generation) }
-            }
+            // Пауза → seek → play в completion: без щелчка и без звука со старой позиции.
+            seeker.seek(
+                player, to: target,
+                shouldResume: { [weak self] in self?.isPlaying ?? false },
+                onFinish: { [weak self] in self?.publishNowPlaying() }
+            )
         }
         publishNowPlaying(elapsed: target)
         persist(force: true)
@@ -213,7 +234,7 @@ final class PlaybackEngine {
     @discardableResult
     func skip(by delta: TimeInterval) -> MPRemoteCommandHandlerStatus {
         guard currentTrack != nil else { return .noSuchContent }
-        return seek(to: (isSeeking ? clock.currentTime : currentSeconds) + delta)
+        return seek(to: (seeker.isSeeking ? clock.currentTime : currentSeconds) + delta)
     }
 
     func toggleShuffle() {
@@ -291,7 +312,7 @@ final class PlaybackEngine {
         }
         guard let track = currentTrack, let updated = library.tracksByID[track.id], updated != track else { return }
         currentTrack = updated
-        if updated.artworkKey != track.artworkKey { loadArtwork(for: updated) }
+        if updated.displayArtworkKey != track.displayArtworkKey { loadArtwork(for: updated) }
         publishNowPlaying()
     }
 
@@ -405,7 +426,21 @@ final class PlaybackEngine {
         return item
     }
 
+    /// Перезапуск текущего трека с начала: пауза → seek(0) → play в completion.
+    private func restartCurrent(play shouldPlay: Bool) {
+        if shouldPlay {
+            guard session.activate() else {
+                show(String(localized: "Сейчас нельзя включить звук. Попробуйте ещё раз."))
+                return
+            }
+            resumeAfterInterruption = false
+            isPlaying = true
+        }
+        seek(to: 0)
+    }
+
     private func forget(_ id: ObjectIdentifier) {
+        finishedItems.remove(id)
         itemEntries.removeValue(forKey: id)
         itemObservations.removeValue(forKey: id)?.invalidate()
         if pendingSeek?.item == id { pendingSeek = nil }
@@ -419,7 +454,8 @@ final class PlaybackEngine {
         currentItemID = nil
         preloadedItemID = nil
         pendingSeek = nil
-        isSeeking = false
+        seeker.cancel()
+        finishedItems.removeAll()
     }
 
     /// Предзагрузить то, что сыграет после текущего трека (с учётом repeat и таймера сна).
@@ -471,11 +507,11 @@ final class PlaybackEngine {
 
     private func loadArtwork(for track: Track) {
         artworkTask?.cancel()
-        guard let key = track.artworkKey else { return }
-        let store = library.artwork
+        // Своя обложка → обложка из файла; пропавшая миниатюра пересоздаётся.
+        guard let key = track.displayArtworkKey else { return }
         let trackID = track.id
         artworkTask = Task { [weak self] in
-            guard let image = await store.image(key: key, size: .large),
+            guard let image = await self?.library.artworkImage(key: key, size: .large),
                   !Task.isCancelled,
                   let self,
                   self.currentTrack?.id == trackID else { return }
@@ -520,7 +556,7 @@ final class PlaybackEngine {
     }
 
     private func tick(_ seconds: TimeInterval) {
-        guard !isSeeking, pendingSeek == nil, currentTrack != nil else { return }
+        guard !seeker.isSeeking, pendingSeek == nil, currentTrack != nil else { return }
         clock.set(time: seconds)
         if let item = player.currentItem, item.status == .readyToPlay {
             let duration = item.duration.seconds
@@ -531,12 +567,6 @@ final class PlaybackEngine {
             }
         }
         if isPlaying { persist() }
-    }
-
-    private func seekDidFinish(_ generation: Int) {
-        guard generation == seekGeneration else { return }
-        isSeeking = false
-        publishNowPlaying()
     }
 
     private func itemStatusChanged(_ id: ObjectIdentifier, status: AVPlayerItem.Status) {
@@ -582,7 +612,7 @@ final class PlaybackEngine {
 
     private func syncTimeControlStatus() {
         switch player.timeControlStatus {
-        case .paused where isPlaying && !isSeeking:
+        case .paused where isPlaying && !seeker.isSeeking:
             // Остановлено не нами: конец трека, система, отключение наушников.
             isPlaying = false
             clock.set(time: currentSeconds)
@@ -597,24 +627,40 @@ final class PlaybackEngine {
     }
 
     private func itemDidFinish(_ id: ObjectIdentifier) {
-        // Если плеер уже перешёл к предзагруженному — это обработает syncCurrentItem.
-        guard id == currentItemID, player.currentItem.map(ObjectIdentifier.init) == id else {
-            syncCurrentItem()
+        let finishedEntry = itemEntries[id]
+        let action = TrackEndPolicy.action(
+            isKnownItem: finishedEntry != nil,
+            isCurrentItem: id == currentItemID,
+            alreadyHandled: finishedItems.contains(id),
+            hasPreloadedSuccessor: preloadedItemID != nil,
+            stopsAtEndOfTrack: sleepTimer == .endOfTrack
+        )
+        if action != .ignore { finishedItems.insert(id) }
+        switch action {
+        case .ignore:
             return
-        }
-        if sleepTimer == .endOfTrack {
+        case .followPlayer:
+            // AVQueuePlayer сам перешёл к предзагруженному элементу — только синхронизируем.
+            syncCurrentItem()
+        case .stopAfterTrack:
             cancelSleepTimer()
             if let next = queue.advanceAfterCompletion() {
                 load(next, autoplay: false)
             } else {
                 finishQueue()
             }
-            return
-        }
-        if let next = queue.advanceAfterCompletion() {
-            load(next, autoplay: true)
-        } else {
-            finishQueue()
+        case .advance:
+            guard let next = queue.advanceAfterCompletion() else {
+                finishQueue()
+                return
+            }
+            if next.id == finishedEntry {
+                // Повтор того же трека без предзагрузки — перемоткой, тот же элемент.
+                finishedItems.remove(id)
+                restartCurrent(play: true)
+            } else {
+                load(next, autoplay: true)
+            }
         }
     }
 
@@ -722,7 +768,7 @@ final class PlaybackEngine {
         }
         let duration = clock.duration > 0 ? clock.duration : track.duration
         publishedDuration = duration
-        let position = elapsed ?? (isSeeking || pendingSeek != nil ? clock.currentTime : currentSeconds)
+        let position = elapsed ?? (seeker.isSeeking || pendingSeek != nil ? clock.currentTime : currentSeconds)
         nowPlaying.update(.init(
             track: track,
             elapsed: position,
@@ -755,7 +801,7 @@ final class PlaybackEngine {
         persistSequence += 1
         let snapshot = PlaybackSnapshot(
             queue: queue,
-            position: pendingSeek?.time ?? (isSeeking ? clock.currentTime : currentSeconds)
+            position: pendingSeek?.time ?? (seeker.isSeeking ? clock.currentTime : currentSeconds)
         )
         let sequence = persistSequence
         let store = snapshots

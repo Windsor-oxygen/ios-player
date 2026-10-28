@@ -14,7 +14,7 @@ struct MiniPlayerView: View {
     var body: some View {
         if let track = engine.currentTrack {
             HStack(spacing: DS.Spacing.m) {
-                ArtworkView(key: track.artworkKey, seed: track.title, cornerRadius: DS.Radius.m)
+                ArtworkView(key: track.displayArtworkKey, seed: track.id.uuidString, cornerRadius: DS.Radius.m)
                     .frame(width: DS.Size.miniArtwork, height: DS.Size.miniArtwork)
                 VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
                     Text(track.title)

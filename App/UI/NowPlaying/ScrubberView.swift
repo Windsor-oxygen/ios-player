@@ -56,12 +56,21 @@ struct ScrubberView: View {
             Slider(
                 value: Binding(get: { clock.currentTime }, set: { engine.seek(to: $0) }),
                 in: 0...duration,
-                step: DS.Gesture.accessibilitySeekStep
+                step: ScrubberAccessibility.step(duration: duration)
             ) {
                 Text("Позиция воспроизведения")
             }
             .accessibilityValue("\(TimeFormatter.string(from: clock.currentTime)) из \(TimeFormatter.string(from: duration))")
         }
+    }
+}
+
+/// Параметры слайдера позиции для VoiceOver.
+enum ScrubberAccessibility {
+    /// Шаг не больше длины трека: иначе Slider падает (max stride must be positive)
+    /// на треках короче шага. Слайдер строится всегда, даже без VoiceOver.
+    static func step(duration: TimeInterval) -> Double {
+        min(DS.Gesture.accessibilitySeekStep, duration)
     }
 }
 

@@ -45,13 +45,12 @@ final class ArtworkStore: @unchecked Sendable {
     /// вызывать только вне main thread.
     func store(imageData data: Data) -> String? {
         let key = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
-        let fm = FileManager.default
-        if Size.allCases.allSatisfy({ fm.fileExists(atPath: fileURL(key: key, size: $0).path(percentEncoded: false)) }) {
+        if hasImages(key: key) {
             return key
         }
         guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
         do {
-            try fm.createDirectory(at: directory, withIntermediateDirectories: true)
+            try prepareDirectory()
             for size in Size.allCases {
                 guard let thumbnail = Self.thumbnail(from: source, maxPixels: size.maxPixels) else { return nil }
                 try Self.writeJPEG(thumbnail, to: fileURL(key: key, size: size))
@@ -61,6 +60,36 @@ final class ArtworkStore: @unchecked Sendable {
             return nil
         }
         return key
+    }
+
+    /// Все размеры миниатюр на диске.
+    func hasImages(key: String) -> Bool {
+        Size.allCases.allSatisfy {
+            FileManager.default.fileExists(atPath: fileURL(key: key, size: $0).path(percentEncoded: false))
+        }
+    }
+
+    /// 1.0/1.1 хранили миниатюры в Caches, которые iOS очищает при нехватке места.
+    /// Переносим уцелевшее в новую папку (это наш кэш, не файлы пользователя).
+    static func migrate(from legacy: URL, to directory: URL) {
+        let fm = FileManager.default
+        defer { excludeFromBackup(directory) }
+        guard fm.fileExists(atPath: legacy.path(percentEncoded: false)) else { return }
+        if !fm.fileExists(atPath: directory.path(percentEncoded: false)) {
+            try? fm.createDirectory(at: directory.deletingLastPathComponent(), withIntermediateDirectories: true)
+            if (try? fm.moveItem(at: legacy, to: directory)) != nil {
+                Log.library.notice("Миниатюры обложек перенесены из Caches")
+                return
+            }
+        }
+        let files = (try? fm.contentsOfDirectory(at: legacy, includingPropertiesForKeys: nil)) ?? []
+        for file in files {
+            let target = directory.appending(path: file.lastPathComponent)
+            if !fm.fileExists(atPath: target.path(percentEncoded: false)) {
+                try? fm.moveItem(at: file, to: target)
+            }
+        }
+        try? fm.removeItem(at: legacy)
     }
 
     /// Готовое к отрисовке изображение (декодировано вне main thread).
@@ -127,6 +156,20 @@ final class ArtworkStore: @unchecked Sendable {
         }
         memory.removeAllObjects()
         palettes.removeAllObjects()
+    }
+
+    private func prepareDirectory() throws {
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        Self.excludeFromBackup(directory)
+    }
+
+    /// Папка миниатюр не попадает в бэкап iCloud: её всегда можно пересоздать.
+    private static func excludeFromBackup(_ directory: URL) {
+        guard FileManager.default.fileExists(atPath: directory.path(percentEncoded: false)) else { return }
+        var values = URLResourceValues()
+        values.isExcludedFromBackup = true
+        var url = directory
+        try? url.setResourceValues(values)
     }
 
     private static func cost(of image: UIImage) -> Int {

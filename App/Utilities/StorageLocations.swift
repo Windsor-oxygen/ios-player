@@ -24,8 +24,26 @@ struct StorageLocations: Sendable {
     var notImported: URL { documents.appending(path: "Не импортировано", directoryHint: .isDirectory) }
     var libraryIndex: URL { applicationSupport.appending(path: "Library.json") }
     var playbackState: URL { applicationSupport.appending(path: "Playback.json") }
-    var artwork: URL { caches.appending(path: "Artwork", directoryHint: .isDirectory) }
+    /// Миниатюры обложек. С 1.1.1 — в Application Support (Caches iOS очищает при нехватке
+    /// места, и обложки пропадали), без бэкапа в iCloud: их всегда можно пересоздать.
+    var artwork: URL { applicationSupport.appending(path: "Artwork", directoryHint: .isDirectory) }
+    /// Свои обложки пользователя (1.1.1). Это данные пользователя — попадают в бэкап.
+    var customArtwork: URL { applicationSupport.appending(path: Self.customArtworkFolder, directoryHint: .isDirectory) }
+    /// Где миниатюры лежали в 1.0/1.1 — переносятся при первом запуске.
+    var legacyArtwork: URL { caches.appending(path: "Artwork", directoryHint: .isDirectory) }
     var downloads: URL { caches.appending(path: "Downloads", directoryHint: .isDirectory) }
+
+    static let customArtworkFolder = "CustomArtwork"
+
+    /// Путь своей обложки трека относительно Application Support.
+    static func customArtworkPath(for trackID: UUID) -> String {
+        "\(customArtworkFolder)/\(trackID.uuidString).jpg"
+    }
+
+    /// Абсолютный URL файла по пути относительно Application Support.
+    func supportURL(forRelativePath path: String) -> URL {
+        applicationSupport.appending(path: path, directoryHint: .notDirectory)
+    }
 
     /// Абсолютный URL файла по пути относительно Documents.
     func fileURL(forRelativePath path: String) -> URL {

@@ -4,11 +4,13 @@ import SwiftUI
 /// экран использует тёмную схему в обеих темах приложения.
 struct NowPlayingView: View {
     @Environment(PlaybackEngine.self) private var engine
+    @Environment(LibraryStore.self) private var library
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var showsQueue = false
     @State private var dragOffset: CGFloat = 0
     @State private var glowColor = DS.Palette.shadow
+    @State private var artworkTarget: ArtworkEditTarget?
 
     var body: some View {
         ZStack {
@@ -22,8 +24,8 @@ struct NowPlayingView: View {
         // Фон через .background, чтобы растянутая обложка не влияла на раскладку.
         .background {
             DynamicBackground(
-                artworkKey: engine.currentTrack?.artworkKey,
-                seed: engine.currentTrack?.title ?? "",
+                artworkKey: engine.currentTrack?.displayArtworkKey,
+                seed: engine.currentTrack?.id.uuidString ?? "",
                 isPlaying: engine.isPlaying,
                 glowColor: $glowColor
             )
@@ -33,11 +35,12 @@ struct NowPlayingView: View {
         .environment(\.colorScheme, .dark)
         .dynamicTypeSize(...DynamicTypeSize.accessibility2)
         .sheet(isPresented: $showsQueue) { QueueView() }
+        .sheet(item: $artworkTarget) { ArtworkEditorSheet(target: $0) }
     }
 
     private func content(_ track: Track) -> some View {
         VStack(spacing: DS.Spacing.l) {
-            header
+            header(track)
             // Обложка занимает всё оставшееся место и остаётся квадратной.
             artwork(track)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -51,7 +54,7 @@ struct NowPlayingView: View {
         .padding(.bottom, DS.Spacing.l)
     }
 
-    private var header: some View {
+    private func header(_ track: Track) -> some View {
         HStack {
             Button {
                 dismiss()
@@ -67,7 +70,25 @@ struct NowPlayingView: View {
                 .frame(width: DS.Size.grabber.width, height: DS.Size.grabber.height)
                 .accessibilityHidden(true)
             Spacer()
-            Color.clear.frame(width: DS.Size.tapTarget, height: DS.Size.tapTarget)
+            Menu {
+                Button {
+                    artworkTarget = ArtworkEditTarget(trackIDs: [track.id], title: track.title, isAlbum: false)
+                } label: {
+                    Label("Сменить обложку…", systemImage: "photo")
+                }
+                if track.customArtworkKey != nil {
+                    Button {
+                        Task { await library.resetCustomArtwork(for: [track.id]) }
+                    } label: {
+                        Label("Сбросить обложку", systemImage: "arrow.uturn.backward")
+                    }
+                }
+            } label: {
+                Image(systemName: "ellipsis")
+                    .font(DS.Font.controlIcon)
+                    .frame(width: DS.Size.tapTarget, height: DS.Size.tapTarget)
+            }
+            .accessibilityLabel("Действия с треком")
         }
         .padding(.top, DS.Spacing.s)
         .contentShape(Rectangle())
@@ -75,7 +96,7 @@ struct NowPlayingView: View {
     }
 
     private func artwork(_ track: Track) -> some View {
-        ArtworkView(key: track.artworkKey, seed: track.title, size: .large, cornerRadius: DS.Radius.xxl)
+        ArtworkView(key: track.displayArtworkKey, seed: track.id.uuidString, size: .large, cornerRadius: DS.Radius.xxl)
             .dsShadow(engine.isPlaying ? DS.Shadow.artworkPlaying : DS.Shadow.artworkPaused, color: glowColor)
             .scaleEffect(engine.isPlaying ? 1 : DS.Scale.artworkPaused)
             .animation(DS.Motion.animation(DS.Motion.artwork, reduceMotion: reduceMotion), value: engine.isPlaying)

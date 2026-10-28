@@ -37,8 +37,8 @@ final class InfoPlistTests: XCTestCase {
     }
 
     func testVersion() {
-        XCTAssertEqual(info["CFBundleShortVersionString"] as? String, "1.1")
+        XCTAssertEqual(info["CFBundleShortVersionString"] as? String, "1.1.1")
         let build = Int(info["CFBundleVersion"] as? String ?? "") ?? 0
-        XCTAssertGreaterThan(build, 1, "Номер сборки должен расти: в 1.0 был 1")
+        XCTAssertGreaterThan(build, 2, "Номер сборки должен расти: в 1.1 был 2")
     }
 }

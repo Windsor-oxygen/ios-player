@@ -16,6 +16,10 @@ struct DemoMode {
         case settings
         case icons
         case empty
+        /// Экран обрезки своей обложки.
+        case artworkCrop
+        /// «Сейчас играет» для трека без обложки (сгенерированная заглушка).
+        case placeholder
     }
 
     let screen: Screen
@@ -76,6 +80,18 @@ struct DemoMode {
             container.presenter.showsSettings = true
         case .empty:
             break
+        case .artworkCrop:
+            guard let track = container.library.tracks.first(where: { $0.displayArtworkKey != nil }) else { return }
+            container.presenter.artworkEditTarget = ArtworkEditTarget(
+                trackIDs: [track.id], title: track.title, isAlbum: false,
+                preselectedImage: DemoLibrary.sampleArtwork()
+            )
+        case .placeholder:
+            guard let track = container.library.tracks.first(where: { $0.displayArtworkKey == nil && $0.isAvailable }) else {
+                return
+            }
+            container.playback.play([track.id])
+            container.presenter.showsNowPlaying = true
         }
     }
 }
@@ -113,6 +129,8 @@ private enum DemoLibrary {
         let fm = FileManager.default
         try? fm.createDirectory(at: locations.music, withIntermediateDirectories: true)
         let artwork = ArtworkStore(directory: locations.artwork)
+        let longDuration = 240
+        let longSilence = silence(seconds: longDuration)
         let shortSilence = silence(seconds: 1)
         var tracks: [Track] = []
         var added = Date(timeIntervalSinceReferenceDate: 780_000_000)
@@ -121,9 +139,12 @@ private enum DemoLibrary {
             let key = album.colors.flatMap { cover($0.0, $0.1, motif: albumIndex) }.flatMap { artwork.store(imageData: $0) }
             for (songIndex, song) in album.songs.enumerated() {
                 let isCurrent = tracks.isEmpty
+                // Треки, которые запускает демо (текущий и первый без обложки), — длинные:
+                // к моменту снимка они не должны доиграть. Остальные — короткие, чтобы не раздувать папку.
+                let isPlayedInDemo = isCurrent || (key == nil && songIndex == 0)
                 let path = "Music/\(album.title ?? "Синглы")/\(songIndex + 1) \(song.prefix(40)).wav"
                 let url = locations.fileURL(forRelativePath: path)
-                let data = isCurrent ? silence(seconds: 240) : shortSilence
+                let data = isPlayedInDemo ? longSilence : shortSilence
                 try? fm.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
                 try? data.write(to: url)
                 let modified = (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
@@ -136,7 +157,7 @@ private enum DemoLibrary {
                     album: album.title,
                     trackNumber: album.title == nil ? nil : songIndex + 1,
                     discNumber: nil,
-                    duration: isCurrent ? 240 : TimeInterval(150 + (albumIndex * 37 + songIndex * 23) % 140),
+                    duration: isPlayedInDemo ? TimeInterval(longDuration) : TimeInterval(150 + (albumIndex * 37 + songIndex * 23) % 140),
                     fileSize: Int64(data.count),
                     modificationDate: modified ?? .now,
                     dateAdded: added,
@@ -167,6 +188,11 @@ private enum DemoLibrary {
         try? fm.createDirectory(at: locations.applicationSupport, withIntermediateDirectories: true)
         try? JSONEncoder().encode(index).write(to: locations.libraryIndex)
         try? JSONEncoder().encode(snapshot).write(to: locations.playbackState)
+    }
+
+    /// Неквадратная картинка для экрана обрезки (как фото с телефона).
+    static func sampleArtwork() -> UIImage? {
+        cover(0x0F0C29, 0xFF2BD6, motif: 2).flatMap(UIImage.init(data:))
     }
 
     /// Обложка: градиент и простой геометрический мотив.

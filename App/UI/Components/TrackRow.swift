@@ -45,7 +45,7 @@ struct TrackRow: View {
             }
             .frame(minWidth: DS.Size.trackNumberWidth, alignment: .center)
         } else {
-            ArtworkView(key: track.artworkKey, seed: track.title)
+            ArtworkView(key: track.displayArtworkKey, seed: track.id.uuidString)
                 .overlay { NowPlayingIndicator(trackID: track.id) }
                 .clipShape(RoundedRectangle(cornerRadius: DS.Radius.s, style: .continuous))
                 .frame(width: DS.Size.rowArtwork, height: DS.Size.rowArtwork)

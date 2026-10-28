@@ -290,6 +290,23 @@
         }
       }
     },
+    "Библиотека сейчас открыта только для чтения — изменения не сохраняются.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The library is read-only right now — changes aren’t saved."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Библиотека сейчас открыта только для чтения — изменения не сохраняются."
+          }
+        }
+      }
+    },
     "Бумага": {
       "extractionState": "manual",
       "localizations": {
@@ -528,6 +545,23 @@
         }
       }
     },
+    "Выбрать в Фото": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose from Photos"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбрать в Фото"
+          }
+        }
+      }
+    },
     "Выключен": {
       "extractionState": "manual",
       "localizations": {
@@ -647,6 +681,23 @@
         }
       }
     },
+    "Действия с альбомом": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Album Actions"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Действия с альбомом"
+          }
+        }
+      }
+    },
     "Действия с плейлистом": {
       "extractionState": "manual",
       "localizations": {
@@ -660,6 +711,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Действия с плейлистом"
+          }
+        }
+      }
+    },
+    "Действия с треком": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Track Actions"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Действия с треком"
           }
         }
       }
@@ -1242,6 +1310,23 @@
         }
       }
     },
+    "Не удалось открыть картинку. Выберите другой файл.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t open the image. Choose another file."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось открыть картинку. Выберите другой файл."
+          }
+        }
+      }
+    },
     "Не удалось прочитать файл библиотеки. Чтобы ничего не потерять, изменения в этот раз не сохраняются. Перезапустите приложение.": {
       "extractionState": "manual",
       "localizations": {
@@ -1289,6 +1374,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Не удалось сменить иконку. Попробуйте ещё раз. (%@)"
+          }
+        }
+      }
+    },
+    "Не удалось сохранить обложку. Возможно, на iPhone мало места.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t save the artwork. Your iPhone may be low on storage."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось сохранить обложку. Возможно, на iPhone мало места."
           }
         }
       }
@@ -1510,6 +1612,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "О приложении"
+          }
+        }
+      }
+    },
+    "Область обрезки": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crop Area"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Область обрезки"
+          }
+        }
+      }
+    },
+    "Обложка": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Artwork"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обложка"
+          }
+        }
+      }
+    },
+    "Обложка альбома": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Album Artwork"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обложка альбома"
+          }
+        }
+      }
+    },
+    "Обложка не изменена": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Artwork Not Changed"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обложка не изменена"
           }
         }
       }
@@ -2228,6 +2398,57 @@
         }
       }
     },
+    "Сбросить обложку": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset Artwork"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сбросить обложку"
+          }
+        }
+      }
+    },
+    "Сбросить обложку альбома": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset Album Artwork"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сбросить обложку альбома"
+          }
+        }
+      }
+    },
+    "Сведите или разведите пальцы, чтобы изменить масштаб, и перетащите, чтобы сдвинуть.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pinch to zoom and drag to move."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сведите или разведите пальцы, чтобы изменить масштаб, и перетащите, чтобы сдвинуть."
+          }
+        }
+      }
+    },
     "Свернуть плеер": {
       "extractionState": "manual",
       "localizations": {
@@ -2258,6 +2479,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Светлое"
+          }
+        }
+      }
+    },
+    "Сдвиньте и увеличьте картинку, чтобы выбрать квадрат.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move and zoom the image to choose the square."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сдвиньте и увеличьте картинку, чтобы выбрать квадрат."
           }
         }
       }
@@ -2360,6 +2598,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Слушать"
+          }
+        }
+      }
+    },
+    "Сменить обложку альбома…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change Album Artwork…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сменить обложку альбома…"
+          }
+        }
+      }
+    },
+    "Сменить обложку…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change Artwork…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сменить обложку…"
           }
         }
       }
@@ -2938,6 +3210,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Формат .%@ не поддерживается iOS. Подходят MP3, M4A/AAC, ALAC, WAV, AIFF и FLAC."
+          }
+        }
+      }
+    },
+    "Фото выбирается без доступа ко всей медиатеке. Сам аудиофайл не изменяется.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Photos are picked without access to your whole library. The audio file itself isn’t changed."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Фото выбирается без доступа ко всей медиатеке. Сам аудиофайл не изменяется."
           }
         }
       }

@@ -47,6 +47,9 @@ struct RootView: View {
                 library.notice = error.localizedDescription
             }
         }
+        .sheet(item: $presenter.artworkEditTarget) { target in
+            ArtworkEditorSheet(target: target)
+        }
         .sheet(isPresented: $presenter.showsDownloadSheet) {
             URLDownloadSheet()
         }

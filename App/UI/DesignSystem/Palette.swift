@@ -35,15 +35,31 @@ extension DS {
             (RGBColor(red: 0.55, green: 0.60, blue: 0.70), RGBColor(red: 0.18, green: 0.20, blue: 0.27)),
         ]
 
-        /// Стабильная (не зависящая от запуска) пара цветов для строки.
+        /// Значки заглушек обложек.
+        static let placeholderSymbols = [
+            "music.note", "waveform", "headphones", "music.mic",
+            "music.quarternote.3", "guitars", "pianokeys", "opticaldisc",
+        ]
+
+        /// Стабильная (не зависящая от запуска) пара цветов для id.
         static func placeholderPair(for seed: String) -> (RGBColor, RGBColor) {
-            // FNV-1a: `hashValue` в Swift меняется от запуска к запуску.
+            placeholderPairs[Int(stableHash(seed) % UInt64(placeholderPairs.count))]
+        }
+
+        /// Стабильный значок для id; выбирается независимо от цвета.
+        static func placeholderSymbol(for seed: String) -> String {
+            let mixed = stableHash(seed) / UInt64(placeholderPairs.count)
+            return placeholderSymbols[Int(mixed % UInt64(placeholderSymbols.count))]
+        }
+
+        /// FNV-1a: `hashValue` в Swift меняется от запуска к запуску.
+        private static func stableHash(_ seed: String) -> UInt64 {
             var hash: UInt64 = 0xcbf2_9ce4_8422_2325
             for scalar in seed.unicodeScalars {
                 hash ^= UInt64(scalar.value)
                 hash = hash &* 0x0000_0100_0000_01B3
             }
-            return placeholderPairs[Int(hash % UInt64(placeholderPairs.count))]
+            return hash
         }
     }
 }
